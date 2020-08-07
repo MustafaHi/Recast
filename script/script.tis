@@ -1,0 +1,177 @@
+// Recast v0.5
+// https://github.com/MustafaHi/Recast
+
+include "xml-parser.tis";
+
+var Performance = false;
+var feed = new Element("feed"); // Store and Parse xml feed
+var tape = $(#tape); // Video element (player)
+var s = $(shows); // Podcasts list
+var podcasts; // Store JSON request result
+
+event click $(navigator li) {
+
+}
+event keyup $(#iSearch)(e) {
+    if (e.keyCode == Event.VK_ENTER) {
+        getPodcasts(this.value);
+    }
+}
+
+event click $(playlist header) {
+    $(browser).@#show = "shows";
+}
+event click $(podcast) {
+    $(playlist).@#failed = undefined;
+    $(playlist).state.busy = true;
+    $(browser).@#show = "playlist";
+    getPodcast(this.@#feed);
+}
+
+var buttons = "<block><div><button .bPlay>PLAY</button><button .bDownload>DOWNLOAD</button></div><div><button .bDownload>PLAYLIST</button><button .bQueue>MORE</button></div></block>";
+async function getPodcast(link) {
+    try {
+        var r = await view.request({type:#get, url:link, output:#stream});
+            debug Call: r; 
+        var episodes = $(episodes);
+            episodes.clear();
+
+        feed.html = r[0].toString();
+
+        for (var it in feed.$$(channel>item)) { // it for item
+            // episodes.$append(<episode audio="{it.$(enclosure).@#url}"><block><name>{it.$(title).text}</name><date>{it.$(pubDate).text}</date></block>{feed.parseHtml(buttons.toHtmlString())}<description>{it.$(description).html}dddd</description></episodes>);
+            // debug: it;
+            if (it.$(enclosure))
+            episodes.append('<episode audio="' + it.$(enclosure).@#url + '"><block><name>'+ it.$(title).text + '</name><date>' + it.$(pubDate).text.splice(16) + '</date></block>' + buttons + '<description>' + (Performance ? "" : it.$(description).text) + '</description></episodes>');
+        }
+        // update author 
+        var author = $(author);
+        var podcast = podcasts.results.filter(p => p.feedUrl == link)[0];
+        author.$(>img).@#src = podcast.artworkUrl600;
+        author.$(>name).html = podcast.collectionName;
+        author.$(>description).html = feed.$(channel>description).text;
+
+        $(playlist).state.busy = false;
+    } catch (e) {
+        $(playlist).@#failed = true;
+        debug error: e.toString();
+    }
+}
+
+event click $(.bPlay) {
+    $(#tapePlay).@#started = true;
+    tape.videoUnload();
+    tape.videoLoad(this.$o(episode).@#audio);
+    tape.videoPlay();
+    $(queue n).text = this.$o(episode).$(name).text;
+    $(queue a).text = $(author>name).text;
+    $(#tapePlay).timer(0.5s, pulse);
+}
+event click $(episode a) { Sciter.launch(this.@#href); }
+
+// log10
+const vlog10 = [0,0,0.3010,0.4771,0.6020,0.6989,0.7781,0.8450,0.9030,0.9542,1];
+function get_vlog10_idx(val) {
+  for( var (idx, v) in vlog10 )
+    if( v >= val ) return idx;
+}
+   
+// function hms(seconds)
+// {
+//   var h,m,s;
+//   s = seconds % 60; seconds /= 60;
+//   m = seconds % 60; seconds /= 60;
+//   h = seconds % 60; return ( h, m, s );
+// }
+function hms(seconds)
+{
+  var h,m,s;
+  s = seconds % 60; seconds /= 60;
+  m = seconds % 60; return ( m, s );
+}
+
+function pulse() { // repeat every 0.5s while podcast is playing
+  var m = (tape.videoDuration() + 0.5).toInteger();
+  var t = (tape.videoPosition() + 0.5).toInteger();
+  if( ! $(#tracker).state.hover ) { // avoid shooting on moving target
+    $(#tracker).sliderRange(0, m); 
+    $(#tracker).value = t;
+  }
+  var (tm,ts) = hms(t); var (mm,ms) = hms(m);
+  $(#tracker).@#time = String.printf("%02d:%02d", tm, ts);
+  $(#tracker>.slider).@#value = String.printf("%02d:%02d", tm, ts);
+  $(#time).value = String.printf("%02d:%02d of %02d:%02d", tm,ts,mm,ms);
+//   volCtl.value = get_vlog10_idx(tape.audioVolume());
+  return true;
+}
+event change $(#tracker) {
+    var (tm, ts) = hms(this.value);
+    this.@#time = String.printf("%02d:%02d", tm, ts);
+    this.$(button).@#value = this.@#time;
+    tape.videoPosition(this.value);
+}
+event click $(#tapePlay) {
+    if (!this.@#started)
+    {
+        this.@#started = true;
+        tape.videoPlay();
+    } 
+    else
+    {
+        this.@#started = undefined;
+        tape.videoStop();
+    }
+}
+event click $(#bPrev) {
+    // if (tape.videoPosition() > 10) tape.videoPlay(0);
+    tape.videoPlay(tape.videoPosition() - 10);
+}
+event click $(#bNext) {
+    tape.videoPlay(tape.videoPosition() + 10);
+}
+
+
+async function getPodcasts(searchTerm = false) {
+    // var link = "http://itunes.apple.com/search?term=wall-street&media=podcast";
+    var link = "http://itunes.apple.com/search";
+    var header = { 
+        "Accept": "application/json",
+        "Content-Type": "application/json"
+    }
+    var param = {
+        "term": (searchTerm ? searchTerm : "wall street"),
+        "media": "podcast"
+    }
+    try {
+        var r = await view.request({type:#get, url:link, params: param, headers: header, output:#stream});
+        podcasts = parseData(r[0]);
+        s.clear();
+        if (Performance) {
+            for (var p in podcasts.results) {
+            // debug: p.feedUrl; // check why podcast not showing
+                if (p.feedUrl) // some don't have feedUrl and will run into issues
+                s.$append(<podcast feed="{p.feedUrl}"><img src="{p.artworkUrl100}"/><n>{p.collectionName}</n><a>{p.artistName}</a></podcast>);
+            }
+        }
+        else {
+            for (var p in podcasts.results) {
+                if (p.feedUrl)
+                s.$append(<podcast feed="{p.feedUrl}"><img src="{p.artworkUrl600}"/><n>{p.collectionName}</n><a>{p.artistName}</a></podcast>);
+            }
+        }
+    } catch (e) {
+        debug error: e.toString();
+    }
+}
+
+function self.ready() {
+    getPodcasts();
+}
+
+
+var (sx,sy,sw,sh) = View.screenBox(0,#workarea,#rectw);
+
+var w = self.toPixels(905dip, #width);
+var h = self.toPixels(735dip, #height);
+
+view.move( sx + (sw - w) / 2, sy + (sh - h) / 2, w,h, true );

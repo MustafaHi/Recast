@@ -1,0 +1,78 @@
+<html lang="ar" window-frame="extended" window-resizable>
+<head>
+    <title>Recast</title>
+    <link rel="stylesheet" href="style/icons.css">
+    <link rel="stylesheet" href="style/main.css">
+    <script src="script/script.tis" type="text/tiscript"></script>
+</head>
+<header>
+    <icon role="window-icon"/>
+    <caption role="window-caption">Recast</caption>
+    <button role="window-minimize" #minimize></button>
+    <button role="window-maximize" #maximize></button>
+    <button role="window-close" #close></button>
+</header>
+<body>
+    <navigator>
+        <li selected>Home</li>
+        <li>Playlist</li>
+        <li>Subscriptions</li>
+        <li>Downloads</li>
+        <input|text #iSearch placeholder="SEARCH"/>
+    </navigator>
+    <browser>
+        <shows>
+            <!-- <item>
+                <img src="https://is4-ssl.mzstatic.com/image/thumb/Podcasts113/v4/b1/d2/6e/b1d26ecf-8469-7ac5-fab5-bace74392bd2/mza_4375243764931232801.png/600x600bb.jpg"/>
+                <p>The first podcast Here</p>
+                <p>The Author Here</p>
+            </item> -->
+        </shows>
+        <playlist>
+            <header>CLOSE</header>
+            <content>
+                <author>
+                    <img src="https://is4-ssl.mzstatic.com/image/thumb/Podcasts113/v4/b1/d2/6e/b1d26ecf-8469-7ac5-fab5-bace74392bd2/mza_4375243764931232801.png/600x600bb.jpg"/>
+                    <name>WSJ Tech News Briefing</name>
+                    <description></description>
+                    <!-- <div>
+                        <button .bSubscribe>SUBSCRIBE</button>
+                        <button .bAlert>Alert</button>
+                    </div> -->
+                </author>
+                <episodes>
+                    <episode>
+                        <block>
+                            <name>NASA's Most Ambitious Mars Mission Launches Today</name>
+                            <date>2020-06-19</date>
+                        </block>
+                        <block>
+                            <div>
+                                <button .play>PLAY</button>
+                                <button .bDownload>DOWNLOAD</button>
+                            </div>
+                            <div>
+                                <button .bDownload>PLAYLIST</button>
+                                <button .bQueue>MORE</button>
+                            </div>
+                        </block>
+                        <description></description>
+                    </episode>
+                </episodes>
+            </content>
+        </playlist>
+    </browser>
+</body>
+<player>
+    <img #tapeImage/>
+    <btn #bPrev><icon.left/></btn>
+    <btn #tapePlay><icon.play/><span>PLAY</span></btn>
+    <video #tape/>
+    <btn #bNext><icon.right/></btn>
+    <input #tracker type="hslider" time="00:00"/>
+    <p #time></p>
+    <queue>
+        <item><n></n><a></a></item>
+    </queue>
+</player>
+</html>
