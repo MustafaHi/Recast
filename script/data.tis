@@ -1,0 +1,142 @@
+const Version = "0.7";
+const dbPath = System.home("Recast.json");
+
+function initFiles(forced = false) {
+    if (!System.scanFiles(dbPath) || forced) {
+        var file = Stream.openFile(dbPath, "wu");
+        // o = options // downloadThro is ammount of episodes to be download ie. last 3
+        // l = playlists     { id,name }
+        // s = subscriptions { name,author,feed,update,image100,image600 } // imageXX represent size, update is last check Date().toISOString()
+        // p = podcasts      { name,author,audio,list,down,time }
+        var data = {
+            o: {
+                performance: false,
+                animation: true,
+                downloadDir: System.home(),
+                downloadThro: 0,
+                proxy: "",
+                notifcation: true,
+                position: [self.toPixels(905dip, #width), self.toPixels(735dip, #height)],
+                size: [500, 500],
+                theme: "default"
+            },
+            l: [{
+                id: "queue",
+                name: "Queue"
+            }],
+            s: [],
+            p: []
+        }
+        file.print(JSON.stringify(data," "));
+        file.close();
+    }
+}
+initFiles();
+
+namespace db {
+    var data;
+    function load() {
+        var file = Stream.openFile(dbPath, "ur");
+        data = parseData(file);
+        file.close();
+        if(!data) { initFiles(true); load(); }
+        
+        playlists();
+        subscriptions();
+        podcasts(data.p.filter(p => p.list == "queue"), "queue");
+    }
+    function apply() {
+        Performance = data.o.preformance;
+        view.animationsEnabled = data.o.animation;
+
+    }
+    function save() {
+        var file = Stream.openFile(dbPath, "wu");
+        file.print(JSON.stringify(data, " "));
+        file.close();
+    }
+
+    function playlists() {
+        $(#mPlaylists).clear();
+        $(#lists).clear();
+        for (var l in data.l) {
+            var el = <li id={l.id}>{l.name}</li>;
+            $(#mPlaylists).append(el);
+            $(#lists).append(el);
+        }
+        $(#lists>li).postEvent("click");
+    }
+    function addPlaylist() {
+        var list = {
+            id: "L" + rand(90000),
+            name: $(#iPlaylistName).text
+        };
+        data.l.push(list);
+        save();
+        playlists();
+    }
+    function deletePlaylist(ID) {
+        var (i, l) = data.l.find(l => l.id == ID);
+            data.l.remove(i);
+        save();
+    }
+
+    function subscriptions() {
+        var s_s = $(#subscriptions);
+            s_s.clear();
+        if (Performance) {
+            for (var p in data.s)
+                s_s.$append(<podcast feed="{p.feed}"><img src="{p.image100}"/><n>{p.name}</n><a>{p.author}</a></podcast>);
+        } else {
+            for (var p in data.s)
+                s_s.$append(<podcast feed="{p.feed}"><img src="{p.image600}"/><n>{p.name}</n><a>{p.author}</a></podcast>);
+        }
+    }
+    function subscribe(podcast) {
+        data.s.push(podcast);
+        save();
+    }
+    function unsubscribe(podcast) {
+        var (i, p) = data.s.find(p => p.feed == podcast);
+            data.s.remove(i);
+        save();
+    }
+    
+    function podcasts(list = {}, type) {
+        if (type == "playlist") {
+            $(#list).clear();
+            for (var p in list)
+                $(#list).$append(<item audio="{p.audio}" time="{p.time}"><block><div><n>{p.name}</n><a>{p.author}</a></div><div><button .bPlay>PLAY</button><button .delete><icon.x/></button></div></block></item>);
+        } else if (type == "queue") {
+            queue.clear();
+            if (list.length == 0) { return true; }
+            for (var p in list)
+                queue.$prepend(<item audio="{p.audio}" time="{p.time}"><n>{p.name}</n><a>{p.author}</a></item>);
+            queue.$$(item).last.state.current = true;
+            queue.@#list = list[0].list;
+            // if (var el = queue.$$(item).last) el.state.current = true;
+        }
+    }
+    function addPodcast(podcast, list) {
+        var (i, p) = data.p.find(p => p.audio == podcast.audio);
+        if (i >= 0) {
+
+            if (list) { 
+                data.p[i].list = podcast.list;
+                data.p[i].time = podcast.time;
+            } else { data.p[i].down = podcast.down; }
+
+        } else { data.p.push(podcast); }
+        // if (list) podcasts(data.p, "queue");
+        if (queue.@#list == podcast.list) { addToQueue(podcast); }
+        save();
+    }
+    function updateTime(audioUrl, time) {
+        var (i, p) = data.p.find(p => p.audio == audioUrl);
+            data.p[i].time = time;
+        save();
+    }
+    function addToQueue(p) { // p for podcast
+        queue.$prepend(<item audio="{p.audio}" time="{p.time}"><n>{p.name}</n><a>{p.author}</a></item>);
+    }
+}
