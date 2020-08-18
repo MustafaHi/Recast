@@ -4,7 +4,7 @@ html {
     var(playerK): #fff;
     /* font-size: 9pt; */
 }
-
+html[window-state="maximized"] { padding: 0.5em; }
 body {
     margin: 0;
     flow: horizontal;
@@ -33,7 +33,6 @@ header icon {
     image-rendering:optimize-quality;
     /* transform: rotate(30deg); */
 }
-html[window-state="maximized"] { padding: 0.5em; }
 header caption { padding-left: 0.5em; width:*; }
 button[role] {
     /* size:24dip; */
@@ -84,7 +83,7 @@ popup[role=overflow-tooltip] {
     background-color: #f8f8ff;
     padding: 0.4em;
 }
-a, n { overflow-x: hidden; white-space: nowrap; text-overflow: ellipsis; }
+
 menu, popup.menu {
     background: #fff;
     min-width: 8em;
@@ -116,6 +115,34 @@ menu li:hover, #mPlaylists > li:hover {
     background-color: #000;
     color: #fff;
 }
+
+block {
+    vertical-align: middle;
+    display: block;
+    flow: horizontal;
+    border-spacing: *;
+}
+block button:not(:last-child) {
+    margin-right: 5dip;
+}
+
+a, n { overflow-x: hidden; white-space: nowrap; text-overflow: ellipsis; }
+item  n {
+    /* background: blue; */
+    display: block;
+    font-size: 1.1em;
+    font-weight: 600;
+    margin-bottom: 0.2em;
+    /* outline: 1px solid red; */
+}
+item  a {
+    display: block;
+    font-size: 0.9em;
+    color: rgba(0,0,0, 0.8);
+}
+
+
+/* Body */
 
 navigator {
     display: block;
@@ -270,16 +297,6 @@ author description {
     display: block;
 }
 
-block {
-    vertical-align: middle;
-    display: block;
-    flow: horizontal;
-    border-spacing: *;
-}
-block button:not(:last-child) {
-    margin-right: 5dip;
-}
-
 episodes {
     display: block;
     flow: vertical;
@@ -315,7 +332,7 @@ episode description img { display: none; visibility: hidden; }
 
 
 
-
+/* Player */
 
 player {
     position: relative;
@@ -346,7 +363,13 @@ player btn:hover {
     /* background-color: rgba(255,255,255, 0.5); */
     background-color: #e6eef5;
 }
-
+#tapePlay {
+    width: 4.25em;
+}
+#tapePlay span { height: 1dip; }
+#tape {
+    display: none;
+}
 #tracker {
     width: 20em;
     height: 0.3em;
@@ -387,13 +410,6 @@ player btn:hover {
     width: 2em;
     height: 0.3em;
 }
-#tapePlay {
-    width: 4.25em;
-}
-#tapePlay span { height: 1dip; }
-#tape {
-    display: none;
-}
 #time { width: 7em; }
 
 queue {
@@ -429,16 +445,3 @@ queue item:hover {
 }
 queue item:current { display: block; }
 queue item:hover a { color: #ddd; font-rendering-mode: classic; }
-item  n {
-    /* background: blue; */
-    display: block;
-    font-size: 1.1em;
-    font-weight: 600;
-    margin-bottom: 0.2em;
-    /* outline: 1px solid red; */
-}
-item  a {
-    display: block;
-    font-size: 0.9em;
-    color: rgba(0,0,0, 0.8);
-}

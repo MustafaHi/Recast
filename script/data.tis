@@ -1,4 +1,3 @@
-const Version = "0.7";
 const dbPath = System.home("Recast.json");
 
 function initFiles(forced = false) {
@@ -33,7 +32,7 @@ function initFiles(forced = false) {
 }
 initFiles();
 
-namespace db {
+namespace DB {
     var data;
     function load() {
         var file = Stream.openFile(dbPath, "ur");
@@ -57,6 +56,7 @@ namespace db {
     }
 
     function playlists() {
+        var selected = $(#lists>li:current)?.id;
         $(#mPlaylists).clear();
         $(#lists).clear();
         for (var l in data.l) {
@@ -64,7 +64,7 @@ namespace db {
             $(#mPlaylists).append(el);
             $(#lists).append(el);
         }
-        $(#lists>li).postEvent("click");
+        selected ? $(#lists>#{selected}).sendEvent("click") : $(#lists>li).sendEvent("click");
     }
     function addPlaylist() {
         var list = {
@@ -108,13 +108,12 @@ namespace db {
             for (var p in list)
                 $(#list).$append(<item audio="{p.audio}" time="{p.time}"><block><div><n>{p.name}</n><a>{p.author}</a></div><div><button .bPlay>PLAY</button><button .delete><icon.x/></button></div></block></item>);
         } else if (type == "queue") {
-            queue.clear();
+            Queue.clear();
             if (list.length == 0) { return true; }
             for (var p in list)
-                queue.$prepend(<item audio="{p.audio}" time="{p.time}"><n>{p.name}</n><a>{p.author}</a></item>);
-            queue.$$(item).last.state.current = true;
-            queue.@#list = list[0].list;
-            // if (var el = queue.$$(item).last) el.state.current = true;
+                Queue.$prepend(<item audio="{p.audio}" time="{p.time}"><n>{p.name}</n><a>{p.author}</a></item>);
+            Queue.$$(item).last.state.current = true;
+            Queue.@#list = list[0].list;
         }
     }
     function addPodcast(podcast, list) {
@@ -127,8 +126,8 @@ namespace db {
             } else { data.p[i].down = podcast.down; }
 
         } else { data.p.push(podcast); }
-        // if (list) podcasts(data.p, "queue");
-        if (queue.@#list == podcast.list) { addToQueue(podcast); }
+        
+        if (Queue.@#list == podcast.list) { addToQueue(podcast); }
         save();
     }
     function updateTime(audioUrl, time) {
@@ -137,6 +136,6 @@ namespace db {
         save();
     }
     function addToQueue(p) { // p for podcast
-        queue.$prepend(<item audio="{p.audio}" time="{p.time}"><n>{p.name}</n><a>{p.author}</a></item>);
+        Queue.$prepend(<item audio="{p.audio}" time="{p.time}"><n>{p.name}</n><a>{p.author}</a></item>);
     }
 }

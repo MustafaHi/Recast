@@ -1,0 +1,59 @@
+
+// Recast v0.7
+// https://github.com/MustafaHi/Recast
+
+
+// Naming Convention
+// Upper case variables such as below are global
+
+// html selectors prefixed with small letter then upper letter
+// just to define their type;
+// c : Context Menu
+// m : Popup Menu
+// b : Button
+//
+// n : Name
+// a : Author
+
+
+const Version = "0.7";
+
+var Performance = false;
+var Feed = new Element("feed"); // Store and Parse xml feed
+var Tape = $(#tape); // Video element (player)
+var Tracker = $(#tracker); // Slider (progress)
+var Podcasts; // Store JSON request result
+var Playlist = $(playlist);
+var Queue = $(queue);
+
+// include "xml-parser.tis";
+include "vlist.tis";
+
+include "data.tis";
+include "requests.tis";
+include "player.tis";
+include "playlists.tis";
+include "script.tis";
+
+
+
+function self.ready() {
+    getPodcasts();
+    $$(navigator>li)[0].sendEvent("click");
+    DB.load();
+}
+
+
+
+function Element.focus() { this.state.focus = true; }
+
+function ResizeApp() {
+    var (sx,sy,sw,sh) = View.screenBox(0,#workarea,#rectw);
+
+    var w = self.toPixels(905dip, #width);
+    var h = self.toPixels(735dip, #height);
+
+    view.move( sx + (sw - w) / 2, sy + (sh - h) / 2, w,h, true );
+}
+
+ResizeApp();

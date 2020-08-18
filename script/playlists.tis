@@ -1,0 +1,79 @@
+
+event click $(#mPlaylists>li) { // Add to playlist
+    var episode = this.$o(episode);
+    var podcast = {
+        name  : episode.$(name).text,
+        author: $(author>name).text,
+        audio : episode.@#audio,
+        list  : this.id,
+        down  : false,
+        time  : 0
+    };
+    DB.addPodcast(podcast, true);
+    $(#mPlaylists).closePopup();
+    $(#lists>li:current).sendEvent("click");
+}
+
+event click $(#lists>li) { // View playlist
+    // if (this.state.current) return true;
+    if (var c = $(#lists>li:current)) c.state.current = false;
+    this.state.current = true;
+    var list = DB.data.p.filter(p => p.list == this.id);
+    DB.podcasts(list, "playlist");
+}
+
+// Playlist context menu
+event click $(#cPlaylist>.rename) { // Call Rename popup
+    var el = this.$o(#lists>li);
+    el.popup($(#mRename), 2);
+    var input = $(#iRename);
+    input.@#placeholder = el.text;
+    input.text = el.text;
+    input.focus();
+}
+event click $(#bRename) {
+    var el = this.$o(#lists>li).id;
+    var (i, l) = DB.data.l.find(l => l.id == el);
+    DB.data.l[i].name = $(#iRename).text;
+    DB.save();
+    DB.playlists();
+}
+event click $(#cPlaylist>.delete) {
+    var el = this.$o(#lists>li);
+    if (el.state.current) { $(#lists>li).state.current = true; }
+    var ID = el.id;
+    if (ID == "queue") return true;
+    var (i, l) = DB.data.l.find(l => l.id == ID);
+    DB.data.l.remove(i);
+    for (var p in DB.data.p.filter(p => p.list == ID)) // Delete podcasts in playlist
+        DB.data.p.removeByValue(p);
+    DB.save();
+    DB.playlists();
+}
+
+
+// Playlist Buttons
+event click $(#bPlayPL) { // play playlist
+    var list = DB.data.p.filter(p => p.list == $(#lists>li:current).id);
+    DB.podcasts(list, "queue");
+    play();
+}
+
+event click $(#addPlaylist) { this.popup($(#mAddPlaylist),(8 << 16) | 2); $(#iPlaylistName).focus(); }
+event click $(#bAddPlaylist) { if ($(#iPlaylistName).text.length > 1) { DB.addPlaylist(); $(#mAddPlaylist).closePopup(); } }
+
+
+event click $(item .delete) {
+    var item = this.$o(item);
+    var (i, p) = DB.data.p.find(p => p.audio == item.@#audio);
+    DB.data.p.remove(i);
+    if (var c = $(queue>item[audio="{item.@#audio}"])) {
+        if (c.state.current) {
+            $(#bPlayPL).postEvent("click");
+        }
+        c.remove();
+    }
+    item.remove();
+    DB.save();
+}
+

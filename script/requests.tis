@@ -1,0 +1,79 @@
+
+function includeAttributes(recordNo, record, episode) { episode.@#audio = record.audio; }
+
+var Episodes = VirtualList {
+    container: $(episodes),
+    bufferSize: 50,
+    setupItemView: includeAttributes
+};
+Episodes.value = [];
+
+
+// var buttons = "<block><div><button .bPlay>PLAY</button><button .bPlaylist>PLAYLIST</button></div><div><button .bDownload>DOWNLOAD</button><button .bQueue>MORE</button></div></block>";
+async function getPodcast(link) {
+    try {
+        // var episodes = $(episodes); // unused as of VirtualList
+            // episodes.clear();
+        var r = await view.request({type:#get, url:link, output:#stream});
+            debug Call: r;
+
+        Feed.html = r[0].toString();
+        var records = [];
+        for (var it in Feed.$$(channel>item)) {
+            // episodes.append('<episode audio="' + it.$(enclosure).@#url + '"><block><name>'+ it.$(title).text + '</name><date>' + it.$(pubDate).text.splice(16) + '</date></block>' + buttons + '<description>' + (Performance ? "" : it.$(description).text) + '</description></episodes>');
+            // debug: it.$(title).value;
+            if (it.$(enclosure)) {
+                records.push {audio: it.$(enclosure).@#url, name: it.$(title)?.text, date: it.$(pubDate)?.text.splice(16), info: it.$(description)?.text};
+            }
+        }
+        Episodes.value = records;
+
+        // update author 
+        var author = $(author);
+        var podcast = Podcasts.results.find(p => p.feedUrl == link);
+        author.$(>img).@#src = podcast.artworkUrl600;
+        author.$(>name).html = podcast.collectionName;
+        author.$(>description).html = Feed.$(channel>description).text;
+
+        $(.bSubscribe).state.current = DB.data.s.some(p => p.feed == link);
+        Playlist.state.busy = false;
+    } catch (e) {
+        Playlist.@#failed = true;
+        debug error: e.toString();
+    }
+}
+
+
+async function getPodcasts(searchTerm = false) {
+    var link = "http://itunes.apple.com/search";
+    var header = { 
+        "Accept": "application/json",
+        "Content-Type": "application/json"
+    }
+    var param = {
+        "term": (searchTerm ? searchTerm : "wall street"),
+        "media": "podcast"
+    }
+    try {
+        var r = await view.request({type:#get, url:link, params: param, headers: header, output:#stream});
+        Podcasts = parseData(r[0]);
+        var h = $(#home);
+        h.clear();
+        if (Performance) {
+            for (var p in Podcasts.results) {
+            // debug: p.feedUrl;
+                if (p.feedUrl)
+                h.$append(<podcast feed="{p.feedUrl}"><img src="{p.artworkUrl100}"/><n>{p.collectionName}</n><a>{p.artistName}</a></podcast>);
+            }
+        }
+        else {
+            for (var p in Podcasts.results) {
+                if (p.feedUrl)
+                h.$append(<podcast feed="{p.feedUrl}"><img src="{p.artworkUrl600}"/><n>{p.collectionName}</n><a>{p.artistName}</a></podcast>);
+            }
+        }
+    } catch (e) {
+        debug error: e.toString();
+    }
+}
+

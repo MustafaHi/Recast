@@ -1,18 +1,6 @@
 // Recast v0.7
 // https://github.com/MustafaHi/Recast
 
-include "data.tis";
-include "vlist.tis";
-// include "xml-parser.tis";
-
-var Performance = false;
-var feed = new Element("feed"); // Store and Parse xml feed
-var tape = $(#tape); // Video element (player)
-var tracker = $(#tracker); // Slider (progress)
-var podcasts; // Store JSON request result
-var playlist = $(playlist);
-var queue = $(queue);
-
 event click $(navigator>li) {
     $(browser).@#show = this.id;
     if (this.state.current) {return true;}
@@ -28,9 +16,8 @@ event keyup $(#iSearch)(e) {
     }
 }
 
-event click $(playlist header) {
-    $(browser).@#show = "shows";
-}
+event click $(playlist>header) { $(browser).@#show = "shows"; }
+
 var prevLink;
 event click $(podcast) {
     var link = this.@#feed;
@@ -40,118 +27,18 @@ event click $(podcast) {
     }
     prevLink = link;
     $(browser).@#show   = "playlist";
-    playlist.state.busy = true;
-    playlist.@#failed   = undefined;
-    playlist.@#feed     = link;
+    Playlist.state.busy = true;
+    Playlist.@#failed   = undefined;
+    Playlist.@#feed     = link;
     getPodcast(link);
-}
-
-
-function includeAttributes(recordNo, record, episode) {
-    episode.@#audio = record.audio;
-}
-var episodes = VirtualList {
-    container: $(episodes),
-    bufferSize: 50,
-    setupItemView: includeAttributes
-};
-// var buttons = "<block><div><button .bPlay>PLAY</button><button .bPlaylist>PLAYLIST</button></div><div><button .bDownload>DOWNLOAD</button><button .bQueue>MORE</button></div></block>";
-async function getPodcast(link) {
-    try {
-        // var episodes = $(episodes); // unused as of VirtualList
-            // episodes.clear();
-        var r = await view.request({type:#get, url:link, output:#stream});
-            debug Call: r; 
-
-        feed.html = r[0].toString();
-        var records = [];
-        for (var it in feed.$$(channel>item)) { // it for item
-            // episodes.$append(<episode audio="{it.$(enclosure).@#url}"><block><name>{it.$(title).text}</name><date>{it.$(pubDate).text}</date></block>{feed.parseHtml(buttons.toHtmlString())}<description>{it.$(description).html}dddd</description></episodes>);
-            // episodes.append('<episode audio="' + it.$(enclosure).@#url + '"><block><name>'+ it.$(title).text + '</name><date>' + it.$(pubDate).text.splice(16) + '</date></block>' + buttons + '<description>' + (Performance ? "" : it.$(description).text) + '</description></episodes>');
-            // debug: it.$(title).value;
-            if (it.$(enclosure)) {
-                records.push {audio: it.$(enclosure).@#url, name: it.$(title)?.text, date: it.$(pubDate)?.text.splice(16), info: it.$(description)?.text};
-            }
-        }
-        episodes.value = records;
-
-        // update author 
-        var author = $(author);
-        var podcast = podcasts.results.find(p => p.feedUrl == link);
-        author.$(>img).@#src = podcast.artworkUrl600;
-        author.$(>name).html = podcast.collectionName;
-        author.$(>description).html = feed.$(channel>description).text;
-
-        $(.bSubscribe).state.current = db.data.s.some(p => p.feed == link);
-        playlist.state.busy = false;
-    } catch (e) {
-        playlist.@#failed = true;
-        debug error: e.toString();
-    }
-}
-
-event click $(#lists>li) {
-    // if (this.state.current) return true;
-    if (var c = $(#lists>li:current)) c.state.current = false;
-    this.state.current = true;
-    var list = db.data.p.filter(p => p.list == this.id);
-    db.podcasts(list, "playlist");
-}
-event click $(#addPlaylist) { this.popup($(#mAddPlaylist),(8 << 16) | 2); $(#iPlaylistName).state.focus = true; }
-event click $(#bAddPlaylist) { if ($(#iPlaylistName).text.length > 1) { db.addPlaylist(); $(#mAddPlaylist).closePopup(); } }
-event click $(#bPlayPL) { // play playlist
-    var list = db.data.p.filter(p => p.list == $(#lists>li:current).id);
-    db.podcasts(list, "queue");
-    play();
-}
-event click $(item .delete) {
-    var item = this.$o(item);
-    var (i, p) = db.data.p.find(p => p.audio == item.@#audio);
-    db.data.p[i].list = "";
-    if (var c = $(queue>item[audio="{item.@#audio}"])) {
-        if (c.state.current) {
-            $(#bPlayPL).postEvent("click");
-        }
-        c.remove();
-    }
-    item.remove();
-    db.save();
-}
-event click $(#cPlaylist>.rename) {
-    var el = this.$o(#lists>li);
-    el.popup($(#mRename), 2);
-    var input = $(#iRename);
-    input.@#placeholder = el.text;
-    input.text = el.text;
-    input.state.focus = true;
-}
-event click $(#bRename) {
-    var el = this.$o(#lists>li).id;
-    var (i, l) = db.data.l.find(l => l.id == el);
-    db.data.l[i].name = $(#iRename).text;
-    db.save();
-    db.playlists();
-    $(#lists>#{el}).postEvent("click");
-    // this.$o(#lists>li).text = $(#iRename).text;
-    // $(#mRename).closePopup();
-}
-event click $(#cPlaylist>.delete) {
-    var ID = this.$o(#lists>li).id;
-    if (ID == "queue") return true;
-    var (i, l) = db.data.l.find(l => l.id == ID);
-    db.data.l.remove(i);
-    for (var p in db.data.p.filter(p => p.list == ID))
-        db.data.p.removeByValue(p);
-    db.save();
-    db.playlists();
 }
 
 event click $(.bSubscribe) {
     if (this.state.current) { // unsubscribe
-        db.unsubscribe(playlist.@#feed);
+        DB.unsubscribe(playlist.@#feed);
         this.state.current = false;
     } else { // subscribe
-        var p = podcasts.results.find(p => p.feedUrl == playlist.@#feed);
+        var p = Podcasts.results.find(p => p.feedUrl == playlist.@#feed);
         var podcast = {
             feed: p.feedUrl,
             name: p.collectionName,
@@ -160,207 +47,28 @@ event click $(.bSubscribe) {
             image100: p.artworkUrl100,
             image600: p.artworkUrl600
         };
-        db.subscribe(podcast);
+        DB.subscribe(podcast);
         this.state.current = true;
     }
-    db.subscriptions();
+    DB.subscriptions();
 }
 
 event click $(.bPlay) {
     // play(this.$o(episode).@#audio);
     var p = this.$o(episode) || this.$o(item);
     if (p.tag == "episode") {
-        queue.@#list = "";
-        queue.$content(<item audio="{p.@#audio}" time="0"><n>{p.$(name).text}</n><a>{$(author>name).text}</a></item>);
+        Queue.@#list = "";
+        Queue.$content(<item audio="{p.@#audio}" time="0"><n>{p.$(name).text}</n><a>{$(author>name).text}</a></item>);
         $(queue>item).state.current = true;
     } else if (p.tag == "item") {
-        var list = db.data.p.filter(p => p.list == $(#lists>li:current).id);
-        db.podcasts(list, "queue");
+        var list = DB.data.p.filter(p => p.list == $(#lists>li:current).id);
+        DB.podcasts(list, "queue");
         $(queue>item[audio="{p.@#audio}"]).postEvent("click");
     }
     play();
 }
-event click $(episode a) { Sciter.launch(this.@#href); }
 
 event click $(.bPlaylist) { this.popup($(#mPlaylists), 5); }
-event click $(#mPlaylists>li) {
-    var episode = this.$o(episode);
-    var podcast = {
-        name  : episode.$(name).text,
-        author: $(author>name).text,
-        audio : episode.@#audio,
-        list  : this.id,
-        down  : false,
-        time  : 0
-    };
-    db.addPodcast(podcast, true);
-    $(#mPlaylists).closePopup();
-    $(#lists>li:current).sendEvent("click");
-}
 
-event change $(#tracker) {
-    var (tm, ts) = hms(this.value);
-    this.@#time = String.printf("%02d:%02d", tm, ts);
-    this.$(button).@#value = this.@#time;
-    tape.videoStop();
-    tape.videoPosition(this.value);
-}
-event click $(#tracker) { tape.videoPosition(this.value); tape.videoPlay(); if (!$(#tapePlay).@#started) $(#tapePlay).sendEvent("click"); }
+event click $(episode a) { Sciter.launch(this.@#href); }
 
-event click $(#tapePlay) {
-    if (!this.@#started)
-    {
-        this.@#started = true;
-        if (tape.videoPosition() > 0) {
-            tape.videoPlay();
-            tape.timer(0.5s, pulse);
-            if (queue.@#list) tape.timer(10s, updateTime);
-        } else { play(); }
-    } 
-    else
-    {
-        this.@#started = undefined;
-        tape.videoStop();
-    }
-}
-event click $(#bPrev) {
-    // if (tape.videoPosition() > 10) tape.videoPlay(0);
-    tape.videoPlay(tape.videoPosition() - 10);
-}
-event click $(#bNext) {
-    tape.videoPlay(tape.videoPosition() + 10);
-}
-
-event click $(queue>item) {
-    if (this.state.current) return true;
-    $(queue>item:current).state.current = false;
-    this.state.current = true;
-    // play(this.@#audio, this.@#time.toInteger());
-    play();
-}
-
-function MySlider() { // for drawing progress - very expansive [disabled]
-    var button = this.$(button);
-    this.paintContent = function(gfx)
-    {
-      var (x1,y1,x2,y2) = button.box(#rect,#border,#parent);
-      var (w,h) = this.box(#dimension,#inner);
-      debug PAINT: "PAINT";
-      gfx.fillColor( button.style["border-left-color"] )
-         .rectangle(0,0,(x1+x2)/2,h);
-    }
-}
-
-
-async function getPodcasts(searchTerm = false) {
-    // var link = "http://itunes.apple.com/search?term=wall-street&media=podcast";
-    var link = "http://itunes.apple.com/search";
-    var header = { 
-        "Accept": "application/json",
-        "Content-Type": "application/json"
-    }
-    var param = {
-        "term": (searchTerm ? searchTerm : "wall street"),
-        "media": "podcast"
-    }
-    try {
-        var r = await view.request({type:#get, url:link, params: param, headers: header, output:#stream});
-        podcasts = parseData(r[0]);
-        var h = $(#home);
-        h.clear();
-        if (Performance) {
-            for (var p in podcasts.results) {
-            // debug: p.feedUrl; // check why podcast not showing
-                if (p.feedUrl) // some don't have feedUrl and will run into issues
-                h.$append(<podcast feed="{p.feedUrl}"><img src="{p.artworkUrl100}"/><n>{p.collectionName}</n><a>{p.artistName}</a></podcast>);
-            }
-        }
-        else {
-            for (var p in podcasts.results) {
-                if (p.feedUrl)
-                h.$append(<podcast feed="{p.feedUrl}"><img src="{p.artworkUrl600}"/><n>{p.collectionName}</n><a>{p.artistName}</a></podcast>);
-            }
-        }
-    } catch (e) {
-        debug error: e.toString();
-    }
-}
-
-// function play(audio, time = 0) {
-//     $(#tapePlay).@#started = true;
-//     tape.videoUnload();
-//     tape.videoLoad(audio);
-//     tape.videoPlay(time);
-//     $(#tapePlay).timer(0.5s, pulse);
-// }
-function play() {
-    if (var p = $(queue>item:current)) {
-        $(#tapePlay).@#started = true;
-        tape.videoUnload();
-        tape.videoLoad(p.@#audio);
-        tape.videoPlay(p.@#time.toInteger());
-        tape.timer(0.5s, pulse);
-        if (queue.@#list) tape.timer(10s, updateTime);
-    } else if ($(#tapePlay).@#started) { $(#tapePlay).postEvent("click"); }
-}
-function updateTime() {
-    if (!$(#tapePlay).@#started) return false;
-    var time = tape.videoPosition();
-    var (i,p ) = db.data.p.find(p => p.audio == $(queue>item:current).@#audio);
-    db.data.p[i].time = time;
-    db.save();
-    $(queue>item:current).@#time = time;
-    // debug TIME: "saved";
-    return true;
-}
-tape.onControlEvent = function(evt) { // not working [unknown reason]
-    switch(evt.type) {
-      case Event.VIDEO_INITIALIZED: debug: "init"; return true;
-      case Event.VIDEO_STARTED:     debug: "started"; return true;
-      case Event.VIDEO_STOPPED:     debug: "stopped";  return true;
-    }
-}
-const vlog10 = [0,0,0.3010,0.4771,0.6020,0.6989,0.7781,0.8450,0.9030,0.9542,1];
-function get_vlog10_idx(val) {
-  for( var (idx, v) in vlog10 )
-    if( v >= val ) return idx;
-}
-
-function hms(seconds) {
-  var m,s;
-  s = seconds % 60; seconds /= 60;
-  m = seconds % 60; return ( m, s );
-}
-
-function pulse() { // repeat every 0.5s while podcast is playing
-      // if (!tape.videoIsPlaying()) return false; // viewIsPlaying() not working [unknown reason]
-      if (!$(#tapePlay).@#started) return false;
-      // debug PULSE: "";
-    var m = (tape.videoDuration() + 0.5).toInteger();
-    var t = (tape.videoPosition() + 0.5).toInteger();
-    if( ! tracker.state.hover ) { // avoid shooting on moving target
-      tracker.sliderRange(0, m);
-      tracker.value = t;
-    }
-    var (tm,ts) = hms(t); var (mm,ms) = hms(m);
-    tracker.@#time = String.printf("%02d:%02d", tm, ts);
-    $(#tracker>.slider).@#value = String.printf("%02d:%02d", tm, ts);
-    $(#time).value = String.printf("%02d:%02d of %02d:%02d", tm,ts,mm,ms);
-    // volCtl.value = get_vlog10_idx(tape.audioVolume());
-    return true;
-}
-
-
-function self.ready() {
-    getPodcasts();
-    $$(navigator>li)[0].sendEvent("click");
-    db.load();
-}
-
-
-var (sx,sy,sw,sh) = View.screenBox(0,#workarea,#rectw);
-
-var w = self.toPixels(905dip, #width);
-var h = self.toPixels(735dip, #height);
-
-view.move( sx + (sw - w) / 2, sy + (sh - h) / 2, w,h, true );
