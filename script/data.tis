@@ -3,7 +3,7 @@ const dbPath = System.home("Recast.json");
 function initFiles(forced = false) {
     if (!System.scanFiles(dbPath) || forced) {
         var file = Stream.openFile(dbPath, "wu");
-        // o = options // downloadThro is ammount of episodes to be download ie. last 3
+        // o = options
         // l = playlists     { id,name }
         // s = subscriptions { name,author,feed,update,image100,image600 } // imageXX represent size, update is last check Date().toISOString()
         // p = podcasts      { name,author,audio,list,down,time }
@@ -11,13 +11,14 @@ function initFiles(forced = false) {
             o: {
                 performance: false,
                 animation: true,
+                trayPlayer: false,
+                notification: true,
+                autoDownload: false,
                 downloadDir: System.home(),
-                downloadThro: 0,
                 proxy: "",
-                notifcation: true,
-                position: [self.toPixels(905dip, #width), self.toPixels(735dip, #height)],
+                theme: "default",
                 size: [500, 500],
-                theme: "default"
+                position: [self.toPixels(905dip, #width), self.toPixels(735dip, #height)]
             },
             l: [{
                 id: "queue",
@@ -40,14 +41,20 @@ namespace DB {
         file.close();
         if(!data) { initFiles(true); load(); }
         
+        apply();
+        getPodcasts();
         playlists();
         subscriptions();
         podcasts(data.p.filter(p => p.list == "queue"), "queue");
+        downloads();
+        $(#setting).value = data.o;
     }
     function apply() {
-        Performance = data.o.preformance;
+        Performance = data.o.performance;
         view.animationsEnabled = data.o.animation;
-
+        self.@#theme = data.o.theme;
+        // getPodcasts();
+        save();
     }
     function save() {
         var file = Stream.openFile(dbPath, "wu");
@@ -104,9 +111,9 @@ namespace DB {
     
     function podcasts(list = {}, type) {
         if (type == "playlist") {
-            $(#list).clear();
+            $(#playlists>list).clear();
             for (var p in list)
-                $(#list).$append(<item audio="{p.audio}" time="{p.time}"><block><div><n>{p.name}</n><a>{p.author}</a></div><div><button .bPlay>PLAY</button><button .delete><icon.x/></button></div></block></item>);
+                $(#playlists>list).$append(<item audio="{p.audio}" time="{p.time}"><block><div><n>{p.name}</n><a>{p.author}</a></div><div><button .bPlay>PLAY</button><button .delete><icon.x/></button></div></block></item>);
         } else if (type == "queue") {
             Queue.clear();
             if (list.length == 0) { return true; }
@@ -138,4 +145,26 @@ namespace DB {
     function addToQueue(p) { // p for podcast
         Queue.$prepend(<item audio="{p.audio}" time="{p.time}"><n>{p.name}</n><a>{p.author}</a></item>);
     }
+
+    function downloads() {
+        var d = $(#downloads>list);
+            d.clear();
+        for (var p in data.p.filter(p => p.down == true))
+            d.$append(<item audio="{p.audio}" time="{p.time}"><block><div><n>{p.name}</n><a>{p.author}</a></div><div><button .bPlay>PLAY</button><button .delete><icon.x/></button></div></block></item>);
+    }
 }
+
+
+event change $(#setting) {
+    DB.data.o = this.value;
+    DB.apply();
+}
+event click $(#changeDir) {
+    var fn = view.selectFolder("Select Download folder" , System.home());
+    if (fn) {
+        DB.data.o.downloadDir = fn;
+        DB.save();
+        $(#setting).value = DB.data.o;
+    }
+}
+

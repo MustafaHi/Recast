@@ -34,7 +34,7 @@ header icon {
     /* transform: rotate(30deg); */
 }
 header caption { padding-left: 0.5em; width:*; }
-button[role] {
+header button[role] {
     /* size:24dip; */
     padding:0;
     margin: 0;
@@ -57,28 +57,29 @@ button[role] {
     position: relative;
     z-index: 1;
 }
-button[role]:hover { background-color: rgba(0,0,0, 0.1); }
+header button[role]:hover { background-color: rgba(0,0,0, 0.1); }
 /* button[role]:hover { background-color: #fff; } */
 button[role="window-minimize"] { foreground-image: url(path:M0 0 M0 5 H10 M10 10); }
 button[role="window-maximize"] { foreground-image: url(path:M0 0 H10 V10 H0 Z); }
 html[window-state="maximized"] header button[role="window-maximize"] { foreground-image: url(path:M0 2 h8 v8 h-8 Z M2 2 v-2 h8 v8 h-2); }
 button[role="window-close"] { stroke-width:1.44dip; foreground-image: url(path:M0 0 L10 10 M10 0 L0 10); }
-button[role="window-close"]:hover { background:rgb(232,17,35); stroke:#fff; }
+header button[role="window-close"]:hover { background:rgb(232,17,35); stroke:#fff; }
 
+footer { margin-top: *; }
 body img { width: 100%; image-rendering:optimize-quality; }
-body button {
+body button:not([type]):not([role]) {
     background: #fff;
     cursor: pointer;
     vertical-align: middle;
     /* flow: horizontal; */
 }
-body button:hover, body button:current {
+body button:not([type]):not([role]):hover, body button:current {
     background: #000;
     color: #fff;
     border-color: #000;
 }
 .bPlaylist { behavior: none; }
-input[placeholder]:empty { content: attr(placeholder); }
+input[placeholder]:empty::after { content: attr(placeholder); }
 popup[role=overflow-tooltip] {
     background-color: #f8f8ff;
     padding: 0.4em;
@@ -204,7 +205,7 @@ podcast > a {
     font-size: 0.9em;
     color: rgba(0,0,0, 0.8);
 }
-#playlists { background: #fff; }
+#playlists, #downloads { background: #fff; }
 #playlists>block { vertical-align: middle; padding: 0 0.5em; background: #e6eef5; }
 #lists {
     flow: horizontal;
@@ -221,11 +222,12 @@ podcast > a {
     background: #fff;
     color: #000;
 }
-#list {
+list {
+    display: block;
     flow: vertical;
     padding: 1em;
 }
-#list item {
+list item {
     background: #e6eef5;
     display: block;
     padding: 0.5em 1em;
@@ -322,15 +324,42 @@ episode > block {
     font-weight: 500;
 }
 episode description {
+    overflow: hidden;
     display: block;
     font-size: 0.9em;
     color: #555;
     font-rendering-mode: classic;
+    max-height: 8em;
 }
-episode description img { display: none; visibility: hidden; }
+episode description:expanded { max-height: unset; }
+episode description img { display: none; visibility: none; }
+episode description br  { display: none; }
+episode description p   { margin: 5dip 0; }
 
+/* #options { background: #fff; } */
+form {
+    margin-top: 4em;
+    max-width: 30em;
+    font-size: 1.2em;
+    font-rendering-mode: enhanced;
+    flow: row(label, input select, button br);
+    border-spacing: 1em;
 
-
+}
+form button|checkbox { padding-left: 1.7em; }
+form label { vertical-align: middle; height: *;}
+form input:not([type="integer"]), form input caption {
+    padding: 0.5em;
+    border-radius: 0;
+}
+form input { width: *; }
+form select {
+    border-radius: 0;
+    height: *;
+    background: #fff;
+}
+form select button { padding-right: 0.5em; }
+form select caption { vertical-align: middle; }
 
 /* Player */
 
@@ -390,7 +419,7 @@ player btn:hover {
     width: 5dip;
 }
 #tracker:hover > button::after {
-    content: attr(value);
+    content: parent-attr(time);
     font-weight: bold;
     width: 4em;
     font-family: Consolas;
