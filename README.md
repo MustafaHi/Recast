@@ -1,7 +1,7 @@
 # Recast
  Desktop podcast application
 
-> Version : 0.7  
+> Version : 0.9  
 > [Binary Release](https://github.com/MustafaHi/Recast/releases)  
 > [Change Log & Features](https://github.com/MustafaHi/Recast/wiki/Change-log-&-Features)  
 > [Dev Guide](https://github.com/MustafaHi/Recast/wiki/Dev-Guide)  
@@ -21,7 +21,7 @@ unchecked mean it's still in development
 - [x] Playlist
 - [ ] Download
 - [x] Subscription
-- [ ] New episode notification
+- [ ] New episode Notification/Auto download
 - [ ] Tray player
 - [ ] Setting
 - [ ] Proxy

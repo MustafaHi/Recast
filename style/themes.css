@@ -1,0 +1,37 @@
+/* 
+    Namming Convention
+        `BG` : Background;
+        `K`  : Color;
+        `F`  : Fill;
+        `H`  : Hover;
+
+        `W`  : Width;
+        `H`  : Height;
+*/
+
+
+html[theme=Dark] {
+    var(BG): #222;
+    var(K) : #fff;
+    var(aK): #eee;
+
+    var(clearBG): #111;
+    var(border) : #444;
+    background: color(BG);
+    var(bodyBG): rgba(10, 10, 10, 0.5);
+    var(headerButtonHBG): rgba(255,255,255, 0.1);
+    var(headerStroke)   : #fff;
+    var(headerStrokeW)  : 2dip;
+
+    var(buttonK)  : #fff;
+    var(buttonHK) : #000;
+    var(buttonBG) : #000;
+    var(buttonHBG): #fff;
+    var(currentBG): #333;
+
+    var(itemBG): #333;
+    
+    var(playerBG): #111;
+    var(playerHBG): #222;
+    var(playerK) : #fff;
+}

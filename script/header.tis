@@ -28,6 +28,7 @@ var Queue = $(queue);
 
 // include "xml-parser.tis";
 include "vlist.tis";
+include "tray.tis";
 
 include "data.tis";
 include "requests.tis";

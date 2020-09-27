@@ -47,7 +47,10 @@ namespace DB {
     function apply() {
         Performance = data.o.preformance;
         view.animationsEnabled = data.o.animation;
-
+        self.@#theme = data.o.theme;
+        initTray(data.o.trayPlayer);
+        // getPodcasts();
+        save();
     }
     function save() {
         var file = Stream.openFile(dbPath, "wu");

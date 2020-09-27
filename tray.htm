@@ -1,0 +1,224 @@
+<html window-frame="transparent">
+<head>
+<title>Tray Menu</title>
+<link rel="stylesheet" href="style/icons.css">
+<style>
+
+html {
+    /* YOU MUST SET A WIDTH TO YOUR LIKING */
+    min-width: 150dip;
+    width: max-content;
+    
+    height: max-content;
+    background: transparent;
+    overflow: hidden;
+    font-family: Segoe UI;
+}
+body {
+    width: 350dip;
+    height: 145dip;
+    border-radius: 4dip;
+    background: #fff;
+    overflow-y: hidden;
+    /* If you want to add shadow you must add margin */
+    box-shadow: 0 4px 6px rgba(50,50,93,0.5), 0 1px 3px rgba(0,0,0,0.1);
+    margin: 5dip;
+}
+li {
+    display: block;
+    padding: 10dip;
+    background: #fff;
+    font-size: 15dip;
+    font-weight: 500;
+    color: #222;
+}
+li:hover {
+    background: #ddd;
+}
+.header { font-weight: bold; font-size: 12dip; }
+b {
+    display: block;
+    border-bottom: 1dip solid #aaa;
+}
+block {
+    display: block;
+    flow: horizontal;
+}
+div {
+    width: *;
+    flow: vertical;
+    font-weight: 500;
+    color: #222;
+}
+a, n { margin-left: 10dip; display: block; width: *; overflow-x: hidden; white-space: nowrap; text-overflow: ellipsis; }
+n { margin-top: 10dip; font-size: 1.1em; }
+
+#controls {
+    padding-top: 10dip;
+    horizontal-align: center;
+}
+btn {
+    display: inline-block;
+    font-weight: bolder;
+    padding: 1em;
+    /* background: red; */
+    line-height: 1;
+    cursor: pointer;
+    border-radius: 1em;
+    fill: #000;
+    flow: horizontal;
+}
+btn:hover {
+    /* background-color: rgba(255,255,255, 0.5); */
+    background-color: #e6eef5;
+}
+#tapePlay {
+    width: 4.25em;
+}
+#tapePlay span { height: 1dip; }
+#tape {
+    display: none;
+}
+#tracker {
+    margin: 10dip 0 0 10dip;
+    width: 17em;
+    height: 0.3em;
+    /* background: #f0f1fd; */
+    background: #e6eef5;
+    /* aspect: MySlider; */
+    /* background-color: rgba(255,255,255, 0.5); */
+}
+#tracker > .slider {
+    background-color: #000;
+    border-radius: 2dip;
+    height: 16dip;
+    width: 10dip;
+    border: 0;
+    transition: width linear 50ms;
+}
+#tracker:hover > .slider {
+    width: 5dip;
+}
+#tracker:hover > button::after {
+    content: parent-attr(time);
+    font-weight: bold;
+    width: 4em;
+    font-family: Consolas;
+    display: block;
+    background: #fff;
+    box-shadow: 0px 1px 1px #d1e6f8;
+    border-radius: 0.5em;
+    padding: 0.5em;
+    margin-top: -3em;
+    /* margin-left: -2.33em; */
+    margin-left: -2.5em;
+}
+#tracker::before {
+    /* content: ''; */
+    /* background: #f0f1fd; */
+    left: 0;
+    width: 2em;
+    height: 0.3em;
+}
+#time { width: 7em; margin-bottom: 0; }
+
+</style>
+<script type="text/tiscript">
+    event click $(#show) { view.parameters.show(); }
+    event click $(#hide) { view.parameters.hide(); }
+    event click $(#exit) { view.parameters.close(); }
+    view << event activate (as) { if( as === false ) { view.parameters.inactive(); } }
+
+    var mainWindow = view.all[0].root.$(frame#content)[0] || view.all[0].root;
+    var tracker = mainWindow.$(#tracker);
+    //debug: playlist;
+    function self.ready() {
+        var item = mainWindow.$(queue item:current);
+        $(n).text = item.$(n).text;
+        $(a).text = item.$(a).text;
+
+        $(#tracker).sliderRange(0, (mainWindow.ns.Tape.videoDuration() + 0.5).toInteger());
+        $(#tracker).value = tracker.value; 
+        $(#tracker).@#time = tracker.@#time;
+
+        $(#time).text = mainWindow.$(#time).text;
+        if (mainWindow.$(#tapePlay).@#started) {
+            $(#tapePlay).@#started = true;
+        }
+
+        self.timer(0.5s, update);
+    }
+
+    function update() {
+        $(#tracker).value = tracker.value; 
+        $(#tracker).@#time = tracker.@#time;
+        $(#tracker).sliderRange(0, (mainWindow.ns.Tape.videoDuration() + 0.5).toInteger());
+        $(#time).text = mainWindow.$(#time).text;
+        return true;
+    }
+
+    event click $(#tapePlay) {
+        if (!this.@#started)
+        {
+            this.@#started = true;
+            mainWindow.$(#tapePlay).sendEvent("click");
+            $(#tracker).sliderRange(0, (mainWindow.ns.Tape.videoDuration() + 0.5).toInteger());
+        }
+        else
+        {
+            this.@#started = undefined;
+            mainWindow.$(#tapePlay).sendEvent("click");
+        }
+    }
+    event click $(#bPrev) {
+        mainWindow.$(#bPrev).sendEvent("click");
+
+        var item = mainWindow.$(queue item:current);
+        $(n).text = item.$(n).text;
+        $(a).text = item.$(a).text;
+        $(#tapePlay).@#started = true;
+    }
+    event click $(#bNext) {
+        mainWindow.$(#bNext).sendEvent("click");
+
+        var item = mainWindow.$(queue item:current);
+        $(n).text = item.$(n).text;
+        $(a).text = item.$(a).text;
+        $(#tapePlay).@#started = true;
+    }
+
+    function hms(seconds) {
+        var m,s;
+        s = seconds % 60; seconds /= 60;
+        m = seconds % 60; return ( m, s );
+    }
+    event change $(#tracker) {
+        var (tm, ts) = hms(this.value);
+        this.@#time = String.printf("%02d:%02d", tm, ts);
+        mainWindow.ns.Tape.videoStop();
+        mainWindow.ns.Tape.videoPosition(this.value);
+    }
+    event click $(#tracker) { $(#tapePlay).@#started ? mainWindow.ns.Tape.videoPlay() : $(#tapePlay).sendEvent("click"); }
+</script>
+</head>
+<body>
+    <block>
+        <img src="https://is4-ssl.mzstatic.com/image/thumb/Podcasts113/v4/07/85/b0/0785b070-36c2-5515-72a0-0bb8482f424b/mza_3087557325527242553.jpeg/100x100bb.jpg" #authorIMG>
+        <div>
+            <div>
+                <n>Title of the episode</n>
+                <a>Author here</a>
+            </div>
+            <block #controls>
+                <btn #bPrev><icon.left/></btn>
+                <btn #tapePlay><icon.play/><span>PLAY</span></btn>
+                <btn #bNext><icon.right/></btn>
+            </block>
+        </div>
+    </block>
+    <block>
+        <input #tracker type="hslider" time="00:00"/>
+        <p #time>00:00 - 00:00</p>
+    </block>
+</body>
+</html>

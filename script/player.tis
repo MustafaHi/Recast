@@ -17,11 +17,15 @@ event click $(#tapePlay) {
     }
 }
 event click $(#bPrev) {
-    // if (tape.videoPosition() > 10) tape.videoPlay(0);
-    Tape.videoPlay(tape.videoPosition() - 10);
+    if (Tape.videoPosition() > 10) { tape.videoPlay(0); }
+    else {
+        Queue.$$(item)[Queue.$(item:current).index+1].sendEvent("click");
+    }
+    // Tape.videoPlay(Tape.videoPosition() - 10);
 }
 event click $(#bNext) {
-    Tape.videoPlay(tape.videoPosition() + 10);
+    // Tape.videoPlay(Tape.videoPosition() + 10);
+    Queue.$$(item)[Queue.$(item:current).index-1].sendEvent("click");
 }
 
 
@@ -105,5 +109,6 @@ function pulse() { // repeat every 0.5s while podcast is playing
     // Tracker.@#time = String.printf("%02d:%02d", tm, ts);
     $(#tracker>.slider).@#value = String.printf("%02d:%02d", tm, ts);
     $(#time).value = String.printf("%02d:%02d of %02d:%02d", tm,ts,mm,ms);
+    if (t == m) { if (var item = Queue.$$(item)[Queue.$(item:current).index-1]) item.sendEvent("click"); }
     return true;
 }

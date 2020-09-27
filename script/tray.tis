@@ -1,0 +1,70 @@
+// Sciter Tray Menu v3.2
+// https://github.com/MustafaHi/Sciter-Tray
+
+var trayMenu = $(#trayPopup); // keep null to use tray.htm or give it a selector to use a popup
+var trayCentered = true; // True to center the menu to the TrayIcon
+var trayPlayer = null;
+// self.url is not relative if this is inside a folder you must name the folder self.url("folder/tray.htm")
+
+function initTray(trayIcon = true) {
+    if(trayIcon) {
+        view.trayIcon {
+          image: self.loadImage(self.url("Recast.svg")),
+          text: "Welcome Recast!"
+        };
+    } else {
+        view.trayIcon(#remove); 
+    }
+}
+
+view << event trayicon-click(evt) {
+  // if the main app window not showing on top add  view.windowTopmost = true;  then  view.windowTopmost = false;
+    // if (evt.buttons == 1) {view.state = View.WINDOW_SHOWN; view.focus = self; view.windowTopmost = true; view.windowTopmost = false; }
+    // else {
+        if(evt.buttons == 1) {
+            if (!trayPlayer) {
+                function show() { trayPlayer.close(); view.state = View.WINDOW_SHOWN; }
+                function hide() { trayPlayer.close(); view.state = View.WINDOW_HIDDEN; }
+                function inactive() { trayPlayer.close(); trayPlayer=null; }
+                function close() { trayPlayer.close(); view.close(); }
+                trayPlayer = view.window{
+                    url: self.url("tray.htm"),
+                    state: View.WINDOW_HIDDEN,
+                    parameters: { show: show, hide: hide, inactive: inactive, close: close }
+                };
+                var x, y;
+                var (w,h) = trayPlayer.box(#dimension);
+                var (tx,ty) = view.trayIcon(#place);
+                var (sX1,sY1,sX2,sY2) = view.screenBox(#workarea, #rect);
+                if (trayCentered) {
+                    tx < sX1 ? x = sX1 : (tx > sX2 ? x = (sX2 - w) : x = (tx-(w/2.1)));
+                    ty < (sY1*4) ? y = (ty + 32) : (ty > sY2 ? y = (sY2 - h) : y = ty-h);
+                    tx < sX1 || tx - sX2 > 20 ? y += (h/2) : "";
+                } else {
+                    tx < (sX1*4) ? x = tx : (tx > sX2 ? x = (sX2 - w) : x = tx);
+                    ty < (sY1*4) ? y = (ty + 32) : (ty > sY2 ? y = (sY2 - h) : y = ty-h);
+                }
+                trayPlayer.move(x.toInteger(), y, w, h);
+                trayPlayer.state = View.WINDOW_SHOWN;
+                trayPlayer.windowTopmost = true;
+                trayPlayer.focus = self;
+            }
+        }
+        else {
+            // view.focus = trayMenu;
+            var (tx,ty) = view.trayIcon(#place);
+            var (sx,sy) = view.box(#position,#client,#screen);
+            self.popup(trayMenu, (trayCentered ? 2 : 1), tx - sx, ty - sy);
+            // self.popup(trayMenu, 1, evt.x - sx, evt.y - sy - 10);
+        }
+    // }
+}
+
+
+event click $(#show) { view.state = View.WINDOW_SHOWN;  trayMenu.closePopup(); }
+event click $(#hide) { view.state = View.WINDOW_HIDDEN; trayMenu.closePopup(); }
+event click $(#exit) { view.close(); }
+
+function trayPlaylist() {
+    return "play";
+}
