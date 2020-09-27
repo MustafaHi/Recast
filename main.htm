@@ -3,15 +3,7 @@
     <title>Recast</title>
     <link rel="stylesheet" href="style/icons.css">
     <link rel="stylesheet" href="style/main.css">
-    <link rel="stylesheet" href="style/themes.css">
     <script src="script/header.tis" type="text/tiscript"></script>
-    <popup #trayPopup>
-        <div>
-          <li #show>Show</li>
-          <li #hide>Hide</li>
-          <li #exit>Exit</li>
-        </div>
-    </popup>
     <menu #cPlaylist>
         <li .rename>Rename</li>
         <li .delete>Delete</li>
@@ -53,7 +45,7 @@
                     <button #addPlaylist>Add</button>
                 </div>
             </block>
-            <div #list></div>
+            <list></list>
         </section>
         <section #subscriptions></section>
         <section #downloads>Downloads
@@ -63,7 +55,7 @@
             <form #setting>
                 <button|checkbox (performance)>Performance Mode</button>
                 <button|checkbox (animation)>Animation</button>
-                <button|checkbox (trayPlayer)>Tray Player</button>
+                <button|checkbox (trayPlayer) disabled>Tray Player</button>
                 <button|checkbox (notification) disabled>Notification</button>
                 <button|checkbox (autoDownload) disabled>Auto Download</button>
                 <label for="downloadDir">Download Directory : </label>
@@ -75,18 +67,17 @@
                 <label>Theme : </label>
                     <select (theme)>
                         <option>Default</option>
-                        <option>Dark</option>
                     </select>
             </form>
             <footer>
-                Recast 0.9 <a href="https://github.com/MustafaHi/Recast">https://github.com/MustafaHi/Recast</a>
+                Recast 0.8 <a href="https://github.com/MustafaHi/Recast">https://github.com/MustafaHi/Recast</a>
             </footer>
         </section>
         <playlist>
             <header>CLOSE</header>
             <content>
                 <author>
-                    <img src="https://www.google-analytics.com/collect?v=1&t=pageview&tid=UA-61531253-4&cid=recast85111602&dp=%2Fv09"/>
+                    <img src="https://www.google-analytics.com/collect?v=1&t=pageview&tid=UA-61531253-4&cid=recast85111609&dp=%2Fv08"/>
                     <name></name>
                     <description></description>
                     <div style="margin-top: 2em">
@@ -110,7 +101,7 @@
                                 <button .bQueue>MORE</button>
                             </div>
                         </block>
-                        <description(info)></description>
+                        <description></description>
                     </episode>
                 </episodes>
             </content>
