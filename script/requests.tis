@@ -1,5 +1,5 @@
 
-function includeAttributes(recordNo, record, episode) { episode.@#audio = record.audio; episode.$(>description).html = record.info || " "; }
+function includeAttributes(recordNo, record, episode) { episode.@#audio = record.audio; }
 
 var Episodes = VirtualList {
     container: $(episodes),
@@ -8,24 +8,15 @@ var Episodes = VirtualList {
 };
 Episodes.value = [];
 
-function Get(params) {
-    var defaultParams = { type:#get, output:#stream };
-    var query = {...defaultParams, ...params};
-    if (DB.data.o.proxy) {
-        var p = DB.data.o.proxy.split(":");
-        query.proxyHost = p[0];
-        query.proxyPort = p[1].toInteger();
-    }
-    return view.request(query);
-}
 
 // var buttons = "<block><div><button .bPlay>PLAY</button><button .bPlaylist>PLAYLIST</button></div><div><button .bDownload>DOWNLOAD</button><button .bQueue>MORE</button></div></block>";
 async function getPodcast(link) {
     try {
         // var episodes = $(episodes); // unused as of VirtualList
             // episodes.clear();
-        var r = await Get({url: link});
+        var r = await view.request({type:#get, url:link, output:#stream});
             debug Call: r;
+
         Feed.html = r[0].toString();
         var records = [];
         for (var it in Feed.$$(channel>item)) {
@@ -40,9 +31,8 @@ async function getPodcast(link) {
         // update author 
         var author = $(author);
         var podcast = Podcasts.results.find(p => p.feedUrl == link);
-        if (!podcast) { podcast = DB.data.s.find(p => p.feed == link); }
-        author.$(>img).@#src = podcast.artworkUrl600 || podcast.image600;
-        author.$(>name).html = podcast.collectionName || podcast.author;
+        author.$(>img).@#src = podcast.artworkUrl600;
+        author.$(>name).html = podcast.collectionName;
         author.$(>description).html = Feed.$(channel>description).text;
 
         $(.bSubscribe).state.current = DB.data.s.some(p => p.feed == link);
@@ -65,12 +55,13 @@ async function getPodcasts(searchTerm = false) {
         "media": "podcast"
     }
     try {
-        var r = await Get({url: link, params: param, headers: header});
+        var r = await view.request({type:#get, url:link, params: param, headers: header, output:#stream});
         Podcasts = parseData(r[0]);
         var h = $(#home);
         h.clear();
         if (Performance) {
             for (var p in Podcasts.results) {
+            // debug: p.feedUrl;
                 if (p.feedUrl)
                 h.$append(<podcast feed="{p.feedUrl}"><img src="{p.artworkUrl100}"/><n>{p.collectionName}</n><a>{p.artistName}</a></podcast>);
             }

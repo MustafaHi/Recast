@@ -13,21 +13,22 @@ event click $(#tapePlay) {
     {
         this.@#started = undefined;
         Tape.videoStop();
-        if (Queue.@#list) updateTime();
+        updateTime();
     }
 }
 event click $(#bPrev) {
     // if (tape.videoPosition() > 10) tape.videoPlay(0);
-    Tape.videoPlay(Tape.videoPosition() - 10);
+    Tape.videoPlay(tape.videoPosition() - 10);
 }
 event click $(#bNext) {
-    Tape.videoPlay(Tape.videoPosition() + 10);
+    Tape.videoPlay(tape.videoPosition() + 10);
 }
 
 
 event change $(#tracker) {
     var (tm, ts) = hms(this.value);
     this.@#time = String.printf("%02d:%02d", tm, ts);
+    this.$(button).@#value = this.@#time;
     Tape.videoStop();
     Tape.videoPosition(this.value);
 }
@@ -44,9 +45,9 @@ event click $(queue>item) {
 
 Tape.onControlEvent = function(evt) { // not working [unknown reason]
     switch(evt.type) {
-      case Event.VIDEO_INITIALIZED: () => {debug: "init";    return false};
-      case Event.VIDEO_STARTED:     () => {debug: "started"; return false};
-      case Event.VIDEO_STOPPED:     () => {debug: "stopped"; return false};
+      case Event.VIDEO_INITIALIZED: () => {debug: "init"; return true};
+      case Event.VIDEO_STARTED:     () => {debug: "started"; return true};
+      case Event.VIDEO_STOPPED:     () => {debug: "stopped";  return true};
     }
 }
 
@@ -91,17 +92,18 @@ function hms(seconds) {
 }
 
 function pulse() { // repeat every 0.5s while podcast is playing
-      // if (!Tape.videoIsPlaying()) return false; // videoIsPlaying() not working [unknown reason]
+      // if (!tape.videoIsPlaying()) return false; // viewIsPlaying() not working [unknown reason]
     if (!$(#tapePlay).@#started) return false;
       // debug PULSE: "";
     var m = (Tape.videoDuration() + 0.5).toInteger();
     var t = (Tape.videoPosition() + 0.5).toInteger();
-    if( ! Tracker.state.hover ) {
+    if( ! Tracker.state.hover ) { // avoid shooting on moving target
       Tracker.sliderRange(0, m);
       Tracker.value = t;
     }
     var (tm,ts) = hms(t); var (mm,ms) = hms(m);
-    Tracker.@#time = String.printf("%02d:%02d", tm, ts);
+    // Tracker.@#time = String.printf("%02d:%02d", tm, ts);
+    $(#tracker>.slider).@#value = String.printf("%02d:%02d", tm, ts);
     $(#time).value = String.printf("%02d:%02d of %02d:%02d", tm,ts,mm,ms);
     return true;
 }

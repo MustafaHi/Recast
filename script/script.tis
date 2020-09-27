@@ -1,9 +1,8 @@
-// Recast v0.8
+// Recast v0.7
 // https://github.com/MustafaHi/Recast
-// Refer to Header.tis for main script
 
 event click $(navigator>li) {
-    $(browser).@#show = this.@#for;
+    $(browser).@#show = this.id;
     if (this.state.current) {return true;}
     
     if (var c = $(navigator>li:current)) { c.state.current = false; }
@@ -36,10 +35,10 @@ event click $(podcast) {
 
 event click $(.bSubscribe) {
     if (this.state.current) { // unsubscribe
-        DB.unsubscribe(Playlist.@#feed);
+        DB.unsubscribe(playlist.@#feed);
         this.state.current = false;
     } else { // subscribe
-        var p = Podcasts.results.find(p => p.feedUrl == Playlist.@#feed);
+        var p = Podcasts.results.find(p => p.feedUrl == playlist.@#feed);
         var podcast = {
             feed: p.feedUrl,
             name: p.collectionName,
@@ -55,27 +54,21 @@ event click $(.bSubscribe) {
 }
 
 event click $(.bPlay) {
+    // play(this.$o(episode).@#audio);
     var p = this.$o(episode) || this.$o(item);
     if (p.tag == "episode") {
         Queue.@#list = "";
         Queue.$content(<item audio="{p.@#audio}" time="0"><n>{p.$(name).text}</n><a>{$(author>name).text}</a></item>);
         $(queue>item).state.current = true;
     } else if (p.tag == "item") {
-        if (this.@#download) return true;
-        if ($(browser).@#show == "downloads") {
-            Queue.@#list = "";
-            Queue.$content(<item audio="{p.@#audio}" time="0"><n>{p.$(n).text}</n><a>{$(a).text}</a></item>);
-            $(queue>item).state.current = true;
-        } else {
-            var list = DB.data.p.filter(p => p.list == $(#lists>li:current).id);
-            DB.podcasts(list, "queue");
-            $(queue>item[audio="{p.@#audio}"]).postEvent("click");
-        }
+        var list = DB.data.p.filter(p => p.list == $(#lists>li:current).id);
+        DB.podcasts(list, "queue");
+        $(queue>item[audio="{p.@#audio}"]).postEvent("click");
     }
     play();
 }
 
 event click $(.bPlaylist) { this.popup($(#mPlaylists), 5); }
 
-event click $(episode>description) { this.state.expanded = true; }
-event click $(a[href]) { Sciter.launch(this.@#href); return true; }
+event click $(episode a) { Sciter.launch(this.@#href); }
+
