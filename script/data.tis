@@ -53,6 +53,7 @@ namespace DB {
         Performance = data.o.performance;
         view.animationsEnabled = data.o.animation;
         self.@#theme = data.o.theme;
+        initTray(data.o.trayPlayer);
         // getPodcasts();
         save();
     }

@@ -1,7 +1,30 @@
 html {
     font-family: Segoe UI;
-    var(playerBG): #1c70bf;
-    var(playerK): #fff;
+
+    var(BG): #e6eef5;
+    var(K) : #000;
+    var(aK): #222;
+    var(clearBG): #fff;
+    var(border) : #eee;
+
+    var(bodyBG): rgba(240, 250, 255, 0.60);
+    var(headerButtonHBG): rgba(0,0,0, 0.1);
+    var(headerStroke)  : #111;
+    var(headerStrokeW) : 1dip;
+
+    var(buttonK)  : #000;
+    var(buttonHK) : #fff;
+    var(buttonBG) : #fff;
+    var(buttonHBG): #000;
+    var(currentBG): rgb(246, 252, 255);
+
+    var(itemBG): #e6eef5;
+
+    /* var(playerBG): #1c70bf; */
+    var(playerBG): #fff;
+    var(playerHBG): #e6eef5;
+    var(playerK) : #000;
+    color: #fff;
     /* font-size: 9pt; */
 }
 html[window-state="maximized"] { padding: 0.5em; }
@@ -9,16 +32,18 @@ body {
     margin: 0;
     flow: horizontal;
     backdrop-filter: blur(50dip);
-    background-color: rgba(240, 250, 255, 0.60);
+    background-color: color(bodyBG);
     transition: background-color linear 300ms;
+    color: color(K);
 }
 /* body:hover {background-color: rgba(240, 250, 255, 0.65);} */
 header {
     vertical-align: middle;
     /* height: 24dip; */
     flow:horizontal;
+    color: color(K);
     /* background: linear-gradient(90deg, #FEE140 0%, #FA709A 100%); */
-    background: #e6eef5;
+    background: color(BG);
 }
 header icon {
     display:block;
@@ -50,15 +75,14 @@ header button[role] {
     foreground-size: 11dip;
     foreground-repeat: no-repeat;
     foreground-position:50% 50%;
-    stroke: #111;
+    stroke: color(headerStroke);
     fill: none;
-    stroke-width:1dip;
+    stroke-width: var(headerStrokeW);
     transition: background-color linear 80ms;
     position: relative;
     z-index: 1;
 }
-header button[role]:hover { background-color: rgba(0,0,0, 0.1); }
-/* button[role]:hover { background-color: #fff; } */
+header button[role]:hover { background-color: color(headerButtonHBG); }
 button[role="window-minimize"] { foreground-image: url(path:M0 0 M0 5 H10 M10 10); }
 button[role="window-maximize"] { foreground-image: url(path:M0 0 H10 V10 H0 Z); }
 html[window-state="maximized"] header button[role="window-maximize"] { foreground-image: url(path:M0 2 h8 v8 h-8 Z M2 2 v-2 h8 v8 h-2); }
@@ -68,18 +92,19 @@ header button[role="window-close"]:hover { background:rgb(232,17,35); stroke:#ff
 footer { margin-top: *; }
 body img { width: 100%; image-rendering:optimize-quality; }
 body button:not([type]):not([role]) {
-    background: #fff;
+    background: color(buttonBG);
+    color: color(buttonK);
     cursor: pointer;
     vertical-align: middle;
     /* flow: horizontal; */
 }
 body button:not([type]):not([role]):hover, body button:current {
-    background: #000;
-    color: #fff;
-    border-color: #000;
+    background: color(buttonHBG);
+    color: color(buttonHK);
+    border-color: color(buttonHBG);
 }
 .bPlaylist { behavior: none; }
-input[placeholder]:empty::after { content: attr(placeholder); }
+input[placeholder]:empty::after { content: attr(placeholder); color: #888; }
 popup[role=overflow-tooltip] {
     background-color: #f8f8ff;
     padding: 0.4em;
@@ -128,6 +153,8 @@ block button:not(:last-child) {
 }
 
 a, n { overflow-x: hidden; white-space: nowrap; text-overflow: ellipsis; }
+n { color: color(K); }
+a { color: color(aK); }
 item  n {
     /* background: blue; */
     display: block;
@@ -139,7 +166,6 @@ item  n {
 item  a {
     display: block;
     font-size: 0.9em;
-    color: rgba(0,0,0, 0.8);
 }
 
 
@@ -149,7 +175,7 @@ navigator {
     display: block;
     /* padding-top: 3.3em; */
     size: 180dip *;
-    background: #e6eef5;
+    background: color(BG);
     /* background: #fff; */
 }
 navigator li {
@@ -157,7 +183,7 @@ navigator li {
     padding: 1em;
 }
 navigator li:hover, navigator li:current {
-    background: rgb(246,252,255);
+    background: color(currentBG);
 }
 #iSearch {
     border-radius: 0;
@@ -165,6 +191,7 @@ navigator li:hover, navigator li:current {
     width: *;
     padding: 1em;
     background: none;
+    color: color(K);
 }
 
 browser {
@@ -203,10 +230,13 @@ podcast > n {
 podcast > a {
     display: block;
     font-size: 0.9em;
-    color: rgba(0,0,0, 0.8);
 }
-#playlists, #downloads { background: #fff; }
-#playlists>block { vertical-align: middle; padding: 0 0.5em; background: #e6eef5; }
+#playlists, #downloads { background: color(clearBG); }
+#playlists>block {
+    vertical-align: middle;
+    padding: 0 0.5em;
+    background: color(playerHBG);
+}
 #lists {
     flow: horizontal;
 }
@@ -219,8 +249,8 @@ podcast > a {
     context-menu: selector(#cPlaylist);
 }
 #lists li:hover, #lists li:current {
-    background: #fff;
-    color: #000;
+    background: color(clearBG);
+    color: color(K);
 }
 list {
     display: block;
@@ -228,7 +258,7 @@ list {
     padding: 1em;
 }
 list item {
-    background: #e6eef5;
+    background: color(itemBG);
     display: block;
     padding: 0.5em 1em;
     margin-top: 0.5em;
@@ -236,7 +266,7 @@ list item {
 
 playlist {
     display: block;
-    background: #fff;
+    background: color(clearBG);
     position: absolute;
     overflow: hidden;
     top: 100%;
@@ -255,7 +285,7 @@ playlist:busy::before {
     left: 0;
     size: *;
     position: absolute;
-    background: #fff;
+    background: color(clearBG);
     text-align: center;
     vertical-align: middle;
     flow: vertical;
@@ -310,7 +340,7 @@ episodes {
 }
 episode {
     display: block;
-    border: 1dip solid #eee;
+    border: 1dip solid color(border);
     padding: 1em;
     margin: 0 1em 1em 1em;
     behavior:form;
@@ -327,7 +357,7 @@ episode description {
     overflow: hidden;
     display: block;
     font-size: 0.9em;
-    color: #555;
+    color: color(aK);
     font-rendering-mode: classic;
     max-height: 8em;
 }
@@ -367,12 +397,11 @@ player {
     position: relative;
     display: block;
     height: 5em;
-    /* background: color(playerBG); */
-    background: #fff;
+    background: color(playerBG);
     /* color: color(playerK); */
     /* fill: color(playerK); */
-    color: #000;
-    fill: #000;
+    color: color(playerK);
+    fill : color(playerK);
     flow:horizontal;
     vertical-align: middle;
 }
@@ -384,13 +413,12 @@ player btn {
     /* background: red; */
     line-height: 1;
     cursor: pointer;
-    vertical-align: middle;
     border-radius: 1em;
     flow: horizontal;
 }
 player btn:hover {
     /* background-color: rgba(255,255,255, 0.5); */
-    background-color: #e6eef5;
+    background-color: color(playerHBG);
 }
 #tapePlay {
     width: 4.25em;
@@ -403,12 +431,12 @@ player btn:hover {
     width: 20em;
     height: 0.3em;
     /* background: #f0f1fd; */
-    background: #e6eef5;
+    background: color(playerHBG);
     /* aspect: MySlider; */
     /* background-color: rgba(255,255,255, 0.5); */
 }
 #tracker > .slider {
-    background-color: #000;
+    background-color: color(playerK);
     border-radius: 2dip;
     height: 16dip;
     width: 10dip;
@@ -452,7 +480,7 @@ queue {
     width: *;
     /* size: *; */
     margin-right: 2.5em;
-    background: #e6eef5;
+    background: color(playerHBG);
     border-radius: 4dip;
 }
 queue:hover {
@@ -472,5 +500,34 @@ queue item:hover {
     background-color: #000;
     color: #fff;
 }
+queue item:hover n { color: #fff; }
+queue item:hover a { color: #eee; }
 queue item:current { display: block; }
 queue item:hover a { color: #ddd; font-rendering-mode: classic; }
+
+#trayPopup {
+    width: 150dip;
+    border-radius: 4dip;
+    overflow: hidden;
+    box-shadow: 0 4px 6px rgba(50,50,93,0.7), 0 1px 3px rgba(0,0,0,0.4);
+}
+#trayPopup li {
+    display: block;
+    padding: 10dip;
+    background: #fff;
+    font-size: 15dip;
+    font-weight: 500;
+    color: #222;
+}
+#trayPopup li:hover {
+    background: #ddd;
+}
+#trayPopup .header { font-weight: bold; font-size: 12dip; }
+#trayPopup b {
+    display: block;
+    border-bottom: 1dip solid #aaa;
+}
+#trayPopup button {
+    min-width: 4.5em;
+}
+

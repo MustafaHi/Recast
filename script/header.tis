@@ -1,5 +1,5 @@
 
-// Recast v0.8
+// Recast v0.9
 // https://github.com/MustafaHi/Recast
 
 
@@ -16,7 +16,7 @@
 // a : Author
 
 
-const Version = "0.8";
+const Version = "0.9";
 
 var Performance = false;
 var Feed = new Element("feed"); // Store and Parse xml feed
@@ -28,6 +28,7 @@ var Queue = $(queue);
 
 // include "xml-parser.tis";
 include "vlist.tis";
+include "tray.tis";
 
 include "data.tis";
 include "requests.tis";
@@ -41,6 +42,7 @@ include "script.tis";
 function self.ready() {
     $$(navigator>li)[0].sendEvent("click");
     DB.load();
+    Ping();
 }
 
 
@@ -57,3 +59,10 @@ function ResizeApp() {
 }
 
 ResizeApp();
+
+function Ping() {
+    // Ping google analytics, only gives the country, Sciter.machineName() as ID, you can replace with random ID or just remove the function.
+    view.request({
+        url: "https://www.google-analytics.com/collect?v=1&t=pageview&tid=UA-61531253-4&cid=" + Sciter.machineName() +"&dp=%2Fv" + Version
+    });
+}

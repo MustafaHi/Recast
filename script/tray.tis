@@ -65,6 +65,3 @@ event click $(#show) { view.state = View.WINDOW_SHOWN;  trayMenu.closePopup(); }
 event click $(#hide) { view.state = View.WINDOW_HIDDEN; trayMenu.closePopup(); }
 event click $(#exit) { view.close(); }
 
-function trayPlaylist() {
-    return "play";
-}

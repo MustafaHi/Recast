@@ -1,11 +1,10 @@
 <html window-frame="transparent">
 <head>
-<title>Tray Menu</title>
+<title>Recast Tray Player</title>
 <link rel="stylesheet" href="style/icons.css">
 <style>
 
 html {
-    /* YOU MUST SET A WIDTH TO YOUR LIKING */
     min-width: 150dip;
     width: max-content;
     
@@ -13,6 +12,7 @@ html {
     background: transparent;
     overflow: hidden;
     font-family: Segoe UI;
+    font-size: 10pt;
 }
 body {
     width: 350dip;
@@ -39,6 +39,11 @@ li:hover {
 b {
     display: block;
     border-bottom: 1dip solid #aaa;
+}
+img { width: 7em; }
+popup[role=overflow-tooltip] {
+    background-color: #f8f8ff;
+    padding: 0.4em;
 }
 block {
     display: block;
@@ -67,6 +72,7 @@ btn {
     border-radius: 1em;
     fill: #000;
     flow: horizontal;
+    font-size: 9pt;
 }
 btn:hover {
     /* background-color: rgba(255,255,255, 0.5); */
@@ -203,7 +209,7 @@ btn:hover {
 </head>
 <body>
     <block>
-        <img src="https://is4-ssl.mzstatic.com/image/thumb/Podcasts113/v4/07/85/b0/0785b070-36c2-5515-72a0-0bb8482f424b/mza_3087557325527242553.jpeg/100x100bb.jpg" #authorIMG>
+        <img src="Recast.svg" #authorIMG>
         <div>
             <div>
                 <n>Title of the episode</n>

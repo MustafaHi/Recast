@@ -1,7 +1,7 @@
 # Recast
  Desktop podcast application
 
-> Version : 0.8  
+> Version : 0.9  
 > [Binary Release](https://github.com/MustafaHi/Recast/releases)  
 > [Change Log & Features](https://github.com/MustafaHi/Recast/wiki/Change-log-&-Features)  
 > [Dev Guide](https://github.com/MustafaHi/Recast/wiki/Dev-Guide)  
@@ -10,7 +10,7 @@
 Recast is a rich, light and beautiful podcast client for desktop (Windows/Mac/Linux)
 
 ![Main Page](https://i.imgur.com/99BT5Pq.png)
-![Podcast](https://i.imgur.com/70BOxah.png)
+![Podcast](https://i.imgur.com/TWdywSH.png)
 ![Playlists](https://i.imgur.com/JbfGG43.png)
 
 ## Features
@@ -22,11 +22,11 @@ unchecked mean it's still in development
 - [x] Download
 - [x] Subscription
 - [ ] New episode notification
-- [ ] Tray player
+- [x] Tray player
 - [x] Setting
 - [x] Proxy
 - [x] Performance Mode (reduce visuals)
 - [ ] Share
-- [ ] Themes
+- [x] Themes
 
 

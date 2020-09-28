@@ -25,7 +25,7 @@ html[theme=Dark] {
 
     var(buttonK)  : #fff;
     var(buttonHK) : #000;
-    var(buttonBG) : #000;
+    var(buttonBG) : #222;
     var(buttonHBG): #fff;
     var(currentBG): #333;
 
