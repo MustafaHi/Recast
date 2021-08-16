@@ -1,0 +1,108 @@
+playlist {
+    display: block;
+    background: color(clearBG);
+    position: absolute;
+    overflow: hidden;
+    top: 100%;
+    size: *;
+    /* overflow: scroll; */
+    transition: top linear 155ms;
+}
+browser[show="playlist"] playlist { top: 0; }
+playlist:busy::before {
+    /* font-rendering-mode: snap-pixel; */
+    font-rendering-mode: enhanced;
+    content: 'LOADING';
+    font-size: 2em;
+    top: 1.15em;
+    display:block;
+    left: 0;
+    size: *;
+    position: absolute;
+    background: color(clearBG);
+    text-align: center;
+    vertical-align: middle;
+    flow: vertical;
+}
+playlist[failed]::before {
+    content: 'FAILED TO LOAD CONTENT';
+    background: #f54c5d;
+    color: #fff;
+}
+
+playlist header {
+    padding: 0.5em;
+    text-align: center;
+    cursor: pointer;
+    flow: 0;
+}
+playlist content { 
+    display: block;
+    /* overflow-y: auto; */
+    overflow: hidden;
+    size: *;
+    flow:horizontal;
+}
+author {
+    flow: vertical;
+    display: block;
+    max-width: 30%;
+    width: 4*;
+    height: *;
+    padding: 2em 0 0 2em;
+    /* overflow: hidden; */
+}
+author name {
+    font-size: 1.2em;
+    margin: 1em 0;
+    font-weight: bold;
+    display: block;
+    /* font-family: Arial; */
+}
+author description {
+    display: block;
+}
+
+episodes {
+    display: none;
+    flow: vertical;
+    size:*;
+    behavior: virtual-list;
+    /* overflow: scroll-indicator; */
+    padding: 2em 0;
+    overflow-x: hidden;
+    overflow-y: scroll;
+    /* scroll-manner: scroll-manner( animation:false, step:14dip, wheel-step: 14dip ); */
+    prototype: VList url(../script/virtual-list.tis);
+}
+browser[show="playlist"] episodes { display: block; }
+episode {
+    display: block;
+    /* height: max-content; */
+    width: *;
+    border: 1dip solid color(border);
+    padding: 1em;
+    margin: 0 1em 1em 1em;
+    /* behavior:form; */
+    /* font-rendering-mode: enhanced; */
+}
+episode name, episode date {
+    font-size: 1.2em;
+}
+episode block {
+    margin-bottom: 1em;
+    font-weight: 500;
+}
+episode description {
+    overflow: hidden;
+    display: block;
+    font-size: 0.9em;
+    color: color(aK);
+    behavior: htmlarea;
+    font-rendering-mode: classic;
+    max-height: 8em;
+}
+episode description:expanded { max-height: unset; }
+episode description img { display: none; visibility: none; }
+episode description br  { display: none; }
+episode description p   { margin: 5dip 0; }

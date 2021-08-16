@@ -1,0 +1,85 @@
+class VList : Element {
+
+    var me;
+    function attached() {
+        me = this;
+    }
+
+    function render(it) {
+        // if (it.$(enclosure)) {
+        return <episode audio={it.$(enclosure).@#url}>
+                   <block>
+                       <name>{it.$(title)?.text}</name>
+                       <date>{it.$(pubDate)?.text.splice(16)}</date>
+                   </block>
+                   <block>
+                       <div>
+                           <button .bPlay>PLAY</button>
+                           <button .bDownload>DOWNLOAD</button>
+                       </div>
+                       <div>
+                           <button .bPlaylist>PLAYLIST</button>
+                           <button .bLink>LINK</button>
+                       </div>
+                   </block>
+                   <description>{it.$(description)?.text}</description>
+               </episode>;
+        // }
+    }
+
+    function scrollDown(index, n) {
+        if (index == undefined) index = 0;
+        var elements = [];
+        for (var i = 0; i<n; ++i, ++index) {
+            if (index >= Items.length) break;
+            if (Items[index])
+                elements.push(render(Items[index]));
+        }
+        me.append(elements);
+        return { moreafter: (Items.length - index) };
+    }
+
+    function scrollUp(index, n) {
+        if (index == undefined) index = Items.length - 1;
+        var elements = [];
+        for (var i = 0; i<n; ++i, --index) {
+            if(index < 0) break;
+            if (Items[index])
+                elements.push(render(Items[index]));
+        }
+        elements.reverse();
+        me.prepend(elements);
+        return { morebefore: (index < 0 ? 0:index) };
+    }
+
+    function scrollTo(index,n) {
+        var elements = [];
+        var start = index;
+        for (var i = 0; i<n; ++i, ++index) {
+            if(index >= Items.length) break;
+            if (Items[start])
+                elements.push(render(Items[index]));
+        }
+        me.content(elements);
+        return {
+            morebefore: (start <=0 ? 0 : start),
+            moreafter : (Items.length - index)
+        };
+    }
+
+    event contentrequired(evt) {
+        if (!Items) return false;
+        var {length, start, where} = evt.data;
+        if (start == -1 || start >= Items.length) return false;
+        // debug log: evt.data;
+        length = 20;
+        if (where > 0)
+            evt.data = scrollDown(start, length);
+        else if (where < 0)
+            evt.data = scrollUp(start, length);
+        else
+            evt.data = scrollTo(start, length);
+        return true;
+    };
+
+}

@@ -27,11 +27,35 @@ html[theme=Dark] {
     var(buttonHK) : #000;
     var(buttonBG) : #222;
     var(buttonHBG): #fff;
-    var(currentBG): #333;
+    var(currentBG): #111;
 
     var(itemBG): #333;
     
     var(playerBG): #111;
     var(playerHBG): #222;
     var(playerK) : #fff;
+    color: #fff;
+}
+html[theme=Dark] #iSearch { text-selection-caret-color: #fff; }
+
+body[vertical] {
+    flow: vertical;
+}
+
+body[vertical] navigator {
+    flow: horizontal;
+    size: unset;
+    /* height: 40dip; */
+    height: auto;
+    overflow: hidden;
+    /* background: unset; */
+    /* box-sizing: border-box; */
+    /* clip-box: border-box; */
+}
+
+body[vertical] #iSearch {
+    margin-left: *;
+    border:none;
+    /* border-left: 1px solid; */
+    /* text-selection-caret-color: #fff; */
 }

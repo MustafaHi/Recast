@@ -13,7 +13,9 @@ event click $(navigator>li) {
 }
 event keyup $(#iSearch)(e) {
     if (e.keyCode == Event.VK_ENTER) {
-        getPodcasts(this.value);
+        if (this.value.length == 0) {DB.discover(); return true;}
+        Podcasts = [];
+        getPodcasts(this.value, false, 50);
     }
 }
 
@@ -27,11 +29,11 @@ event click $(podcast) {
         return true;
     }
     prevLink = link;
-    $(browser).@#show   = "playlist";
+    getPodcast(link);
     Playlist.state.busy = true;
     Playlist.@#failed   = undefined;
     Playlist.@#feed     = link;
-    getPodcast(link);
+    $(browser).@#show   = "playlist";
 }
 
 event click $(.bSubscribe) {
@@ -39,7 +41,7 @@ event click $(.bSubscribe) {
         DB.unsubscribe(Playlist.@#feed);
         this.state.current = false;
     } else { // subscribe
-        var p = Podcasts.results.find(p => p.feedUrl == Playlist.@#feed);
+        var p = Podcasts.find(p => p.feedUrl == Playlist.@#feed);
         var podcast = {
             feed: p.feedUrl,
             name: p.collectionName,
@@ -67,7 +69,11 @@ event click $(.bPlay) {
             Queue.$content(<item audio="{p.@#audio}" time="0"><n>{p.$(n).text}</n><a>{$(a).text}</a></item>);
             $(queue>item).state.current = true;
         } else {
-            var list = DB.data.p.filter(p => p.list == $(#lists>li:current).id);
+            var list;
+            if ($(browser).@#show == "subscriptions")
+                list = DB.data.p.filter(p => p.list == "subscriptions");
+            else
+                list = DB.data.p.filter(p => p.list == $(#lists>li:current).id);
             DB.podcasts(list, "queue");
             $(queue>item[audio="{p.@#audio}"]).postEvent("click");
         }
@@ -76,6 +82,36 @@ event click $(.bPlay) {
 }
 
 event click $(.bPlaylist) { this.popup($(#mPlaylists), 5); }
+event click $(.bLink) { view.clipboard(#put, {text: this.$p(episode).@#audio}); }
 
 event click $(episode>description) { this.state.expanded = true; }
 event click $(a[href]) { Sciter.launch(this.@#href); return true; }
+
+
+self.on("keydown", (e) => {
+    if (e.keyCode == Event.VK_ESCAPE) { $(browser).@#show = "undefined"; }
+});
+
+event click $(cell .more) {
+    iSearch.value = this.$o(block).$(b).html;
+    iSearch.sendKeyEvent({type: Event.KEY_UP, keyCode: Event.VK_ENTER});
+}
+
+event dblClick $([for=home]) {
+    if (iSearch.value.length == 0) return true; 
+    iSearch.value = "";
+    iSearch.sendKeyEvent({type: Event.KEY_UP, keyCode: Event.VK_ENTER});
+}
+
+function self.closing(reason) {
+    if (reason == #by-code) {
+        var (sx, sy, sw, sh) = view.box(#rectw, #border, #screen);
+        DB.data.o.size = [sw,sh];
+        DB.data.o.position = [sx,sy];
+        DB.save();
+    }
+}
+
+event click $(button#close) {
+    DB.data.o.trayPlayer ? view.state = View.WINDOW_HIDDEN : view.close();
+}

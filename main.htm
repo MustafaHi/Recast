@@ -3,6 +3,8 @@
     <title>Recast</title>
     <link rel="stylesheet" href="style/icons.css">
     <link rel="stylesheet" href="style/main.css">
+    <link rel="stylesheet" href="style/playlist.css">
+    <link rel="stylesheet" href="style/player.css">
     <link rel="stylesheet" href="style/themes.css">
     <script src="script/header.tis" type="text/tiscript"></script>
     <popup #trayPopup>
@@ -27,16 +29,16 @@
         <button #bRename>RENAME</button>
     </popup>
 </head>
-<header>
+<header role="window-caption">
     <icon role="window-icon"/>
-    <caption role="window-caption">Recast</caption>
+    <caption>Recast</caption>
     <button role="window-minimize" #minimize></button>
     <button role="window-maximize" #maximize></button>
-    <button role="window-close" #close></button>
+    <button role #close></button>
 </header>
 <body>
     <navigator>
-        <li for="home" tabindex="0">Home</li>
+        <li for="home" tabindex="0">Discover</li>
         <li for="playlists">Playlists</li>
         <li for="subscriptions">Subscriptions</li>
         <li for="downloads">Downloads</li>
@@ -55,23 +57,28 @@
             </block>
             <list></list>
         </section>
-        <section #subscriptions></section>
+        <section #subscriptions>
+            <div #podcasts></div>
+            <list #episodes></list>
+        </section>
         <section #downloads>Downloads
             <list></list>
         </section>
         <section #options>Options
             <form #setting>
-                <button|checkbox (performance)>Performance Mode</button>
+                <button|checkbox (performance)>Light Mode</button>
                 <button|checkbox (animation)>Animation</button>
                 <button|checkbox (trayPlayer)>Tray Player</button>
-                <button|checkbox (notification) disabled>Notification</button>
-                <button|checkbox (autoDownload) disabled>Auto Download</button>
+                <button|checkbox (verticalFlow)>Vertical Flow</button>
+                <label for="discover">Discover Query : </label>
+                    <input|text (discover) placeholder="News, Money, Tech"/>
+                    <br>
                 <label for="downloadDir">Download Directory : </label>
                     <input|text (downloadDir) placeholder="Download directory" readonly/>
                     <button #changeDir>Change</button>
                 <label for="proxy">Proxy : </label>
                     <input|text (proxy) placeholder="127.0.0.1:8080"/>
-                <br>
+                    <br>
                 <label>Theme : </label>
                     <select (theme)>
                         <option>Default</option>
@@ -79,7 +86,7 @@
                     </select>
             </form>
             <footer>
-                Recast 0.9 <a href="https://github.com/MustafaHi/Recast">https://github.com/MustafaHi/Recast</a>
+                Recast 1.0 <a href="https://github.com/MustafaHi/Recast">https://github.com/MustafaHi/Recast</a>
             </footer>
         </section>
         <playlist>
@@ -107,7 +114,7 @@
                             </div>
                             <div>
                                 <button .bPlaylist>PLAYLIST</button>
-                                <button .bQueue>MORE</button>
+                                <button .bLink>LINK</button>
                             </div>
                         </block>
                         <description></description>

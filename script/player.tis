@@ -6,27 +6,22 @@ event click $(#tapePlay) {
         if (Tape.videoPosition() > 1) {
             Tape.videoPlay();
             Tape.timer(0.5s, pulse);
-            if (Queue.@#list) Tape.timer(10s, updateTime);
+            Tape.timer(10s, saveTime);
         } else { play(); }
     }
     else
     {
         this.@#started = undefined;
         Tape.videoStop();
-        if (Queue.@#list) updateTime();
+        saveTime();
     }
 }
 event click $(#bPrev) {
-    if (tape.videoPosition() > 10) { 
-        tape.videoPlay(0);
-    } else {
-        Queue.$$(item)[Queue.$(item:current).index+1].sendEvent("click");
-    }
-    // Tape.videoPlay(Tape.videoPosition() - 10);
+    if (Tape.videoPosition() > 10) Tape.videoPlay(0);
+    else if (var item = Queue.$$(item)[Queue.$(item:current).index+1]) item.sendEvent("click");
 }
 event click $(#bNext) {
-    Queue.$$(item)[Queue.$(item:current).index-1].sendEvent("click");
-    // Tape.videoPlay(Tape.videoPosition() + 10);
+    if (var item = Queue.$$(item)[Queue.$(item:current).index-1]) item.sendEvent("click");
 }
 
 
@@ -47,7 +42,7 @@ event click $(queue>item) {
     play();
 }
 
-Tape.onControlEvent = function(evt) { // not working [unknown reason]
+Tape.onControlEvent = function(evt) { // not working [require a frame to be rendered]
     switch(evt.type) {
       case Event.VIDEO_INITIALIZED: () => {debug: "init";    return false};
       case Event.VIDEO_STARTED:     () => {debug: "started"; return false};
@@ -55,13 +50,13 @@ Tape.onControlEvent = function(evt) { // not working [unknown reason]
     }
 }
 
-function MySlider() { // for drawing progress - very expensive [disabled]
-    var button = this.$(button);
+var TrackerBTN = Tracker.$(button);
+function DrawProgress() {
+    var button = TrackerBTN;
     this.paintContent = function(gfx)
     {
       var (x1,y1,x2,y2) = button.box(#rect,#border,#parent);
       var (w,h) = this.box(#dimension,#inner);
-      debug PAINT: "PAINT";
       gfx.fillColor( button.style["border-left-color"] )
          .rectangle(0,0,(x1+x2)/2,h);
     }
@@ -74,18 +69,29 @@ function play() {
         Tape.videoLoad(p.@#audio);
         Tape.videoPlay(p.@#time.toInteger());
         Tape.timer(0.5s, pulse);
-        if (Queue.@#list) Tape.timer(10s, updateTime);
-    } else if ($(#tapePlay).@#started) { $(#tapePlay).postEvent("click"); }
+        Tape.timer(10s, saveTime);
+        DB.data.o.current = {
+            name: p.$(n).text,
+            author: p.$(a).text,
+            audio: p.@#audio,
+            list: Queue.@#list,
+            time: p.@#time
+        }
+        DB.save();
+    }
+    // } else if ($(#tapePlay).@#started) { $(#tapePlay).postEvent("click"); }
 }
 
-function updateTime() {
+function saveTime() {
     var time = Tape.videoPosition();
-    var (i,p ) = DB.data.p.find(p => p.audio == $(queue>item:current).@#audio);
-    DB.data.p[i].time = time;
+    if (!$(queue).@#list) DB.data.o.current.time = time; 
+    else {
+        var (i,p ) = DB.data.p.find(p => p.audio == $(queue>item:current).@#audio);
+        DB.data.p[i].time = time;
+    }
     DB.save();
     $(queue>item:current).@#time = time;
     if (!$(#tapePlay).@#started) return false;
-    // debug TIME: "saved";
     return true;
 }
 
@@ -95,10 +101,9 @@ function hms(seconds) {
   m = seconds % 60; return ( m, s );
 }
 
-function pulse() { // repeat every 0.5s while podcast is playing
+function pulse() { // Update Tracker and Time | repeat every 0.5s while podcast is playing
       // if (!Tape.videoIsPlaying()) return false; // videoIsPlaying() not working [unknown reason]
     if (!$(#tapePlay).@#started) return false;
-      // debug PULSE: "";
     var m = (Tape.videoDuration() + 0.5).toInteger();
     var t = (Tape.videoPosition() + 0.5).toInteger();
     if( ! Tracker.state.hover ) {

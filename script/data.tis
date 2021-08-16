@@ -3,26 +3,30 @@ const dbPath = System.home("Recast.json");
 function initFiles(forced = false) {
     if (!System.scanFiles(dbPath) || forced) {
         var file = Stream.openFile(dbPath, "wu");
-        // o = options
-        // l = playlists     { id,name }
-        // s = subscriptions { name,author,feed,update,image100,image600 } // imageXX represent size, update is last check Date().toISOString()
-        // p = podcasts      { name,author,audio,list,down,time }
+        // // o = options
+        // // l = playlists     { id,name }
+        // // s = subscriptions { name,author,feed,update,image100,image600 } // imageXX represent size, update is last check Date().toISOString()
+        // // p = podcasts      { name,author,audio,list,down,time }
         var data = {
             o: {
                 performance: false,
                 animation: true,
                 trayPlayer: false,
-                notification: true,
-                autoDownload: false,
+                verticalFlow: false,
                 downloadDir: System.home(),
+                discover: "Global, Money, Tech, Crime",
                 proxy: "",
-                theme: "default",
-                size: [500, 500],
+                current: {};
+                theme: "Default",
+                size: [905, 735],
                 position: [self.toPixels(905dip, #width), self.toPixels(735dip, #height)]
             },
             l: [{
                 id: "queue",
                 name: "Queue"
+            }, {
+                id: "subscriptions",
+                name: "Subscription"
             }],
             s: [],
             p: []
@@ -41,11 +45,22 @@ namespace DB {
         file.close();
         if(!data) { initFiles(true); load(); }
         
+        move();
         apply();
-        getPodcasts();
+        discover();
         playlists();
         subscriptions();
-        podcasts(data.p.filter(p => p.list == "queue"), "queue");
+        if (data.o.current.list) {
+            var cur = data.o.current;
+            podcasts(data.p.filter(p => p.list == cur.list), "queue", cur.audio);
+        }
+        else if (data.o.current.audio) {
+            var cur = data.o.current;
+            Queue.$content(<item audio="{cur.audio}" time="{cur.time}"><n>{cur.name}</n><a>{cur.author}</a></item>);
+            $(queue>item[audio="{cur.audio}"]).state.current = true;
+        }
+        else
+            podcasts(data.p.filter(p => p.list == "queue"), "queue");
         downloads();
         $(#setting).value = data.o;
     }
@@ -53,9 +68,10 @@ namespace DB {
         Performance = data.o.performance;
         view.animationsEnabled = data.o.animation;
         self.@#theme = data.o.theme;
+        $(body).@#vertical = data.o.verticalFlow || undefined;
         initTray(data.o.trayPlayer);
         // getPodcasts();
-        save();
+        // save();
     }
     function save() {
         var file = Stream.openFile(dbPath, "wu");
@@ -63,6 +79,18 @@ namespace DB {
         file.close();
     }
 
+    function discover() {
+        var html = "";
+        for (var d in data.o.discover.split(",")) {
+            d = d.trim();
+            var id = "c" + d.replace(" ", "-");
+            // html += String.printf('<cell id="%s"><block><div>%s</div><div><button .more>MORE</button></div></block><div .content></div></cell>', "c"+d, d);
+            html += String.$(<cell id="{id}"><block><b>{d}</b><button .more>MORE</button></block><div .content></div></cell>);
+            getPodcasts(d, id);
+        }
+        $(#home).html = html;
+        // for (var d in data.o.discover.split(",")) getPodcasts(d.trim(), "c"+d.trim().replace(" ", "-"));
+    }
     function playlists() {
         var selected = $(#lists>li:current)?.id;
         $(#mPlaylists).clear();
@@ -90,14 +118,50 @@ namespace DB {
     }
 
     function subscriptions() {
-        var s_s = $(#subscriptions);
-            s_s.clear();
-        if (Performance) {
-            for (var p in data.s)
-                s_s.$append(<podcast feed="{p.feed}"><img src="{p.image100}"/><n>{p.name}</n><a>{p.author}</a></podcast>);
-        } else {
-            for (var p in data.s)
-                s_s.$append(<podcast feed="{p.feed}"><img src="{p.image600}"/><n>{p.name}</n><a>{p.author}</a></podcast>);
+        var pods = $(#podcasts);
+            pods.clear();
+        var eps = $(#episodes);
+            eps.clear();
+        var episodes = DB.data.p.filter(p => p.list == "subscriptions");
+
+        var image = Performance ? "image100" : "image600";
+        for (var p in data.s)
+            pods.$append(<podcast feed="{p.feed}"><img src="{p[image]}"/><n>{p.name}</n><a>{p.author}</a></podcast>);
+        for (var p in episodes)
+            eps.$append(<item audio="{p.audio}" time="{p.time}"><block><div><n>{p.name}</n><a>{p.author}</a></div><div><button .bPlay>PLAY</button><button .delete><icon.x/></button></div></block></item>);
+    }
+    async function checkSubs() {
+        var newEpisodes = [];
+        for (var s in data.s) {
+            try {
+                var r = await Get({url: s.feed});
+                Feed.html = r[0].toString();
+                var lastCheck = new Date(s.update);
+                for (var p in Feed.$$(channel>item))
+                {
+                    var d = new Date(p.$(pubDate).text);
+                    if (Date.diff(lastCheck, d, #minutes) > 0) {
+                        s.update = new Date().toISOString();
+                        var podcast = {
+                            name  : p.$(title).text,
+                            author: s.name,
+                            audio : p.$(enclosure).@#url,
+                            list  : "subscriptions",
+                            down  : false,
+                            time  : 0
+                        };
+                        newEpisodes.push(podcast);
+                    } else break;
+                }
+            } catch (e){
+                debug: e.toString();
+            }
+        }
+        if (newEpisodes.length > 0)
+        {
+            for (var podcast in newEpisodes) DB.addPodcast(podcast, false);
+            save();
+            subscriptions();
         }
     }
     function subscribe(podcast) {
@@ -110,7 +174,7 @@ namespace DB {
         save();
     }
     
-    function podcasts(list = {}, type) {
+    function podcasts(list = {}, type, current = false) {
         if (type == "playlist") {
             $(#playlists>list).clear();
             for (var p in list)
@@ -120,7 +184,8 @@ namespace DB {
             if (list.length == 0) { return true; }
             for (var p in list)
                 Queue.$prepend(<item audio="{p.audio}" time="{p.time}"><n>{p.name}</n><a>{p.author}</a></item>);
-            Queue.$$(item).last.state.current = true;
+            if (current) Queue.$(>item[audio="{current}"]).state.current = true;
+            else Queue.$$(item).last.state.current = true;
             Queue.@#list = list[0].list;
         }
     }
@@ -138,11 +203,11 @@ namespace DB {
         if (Queue.@#list == podcast.list) { addToQueue(podcast); }
         save();
     }
-    function updateTime(audioUrl, time) {
-        var (i, p) = data.p.find(p => p.audio == audioUrl);
-            data.p[i].time = time;
-        save();
-    }
+    // function updateTime(audioUrl, time) {
+    //     var (i, p) = data.p.find(p => p.audio == audioUrl);
+    //         data.p[i].time = time;
+    //     save();
+    // }
     function addToQueue(p) { // p for podcast
         Queue.$prepend(<item audio="{p.audio}" time="{p.time}"><n>{p.name}</n><a>{p.author}</a></item>);
     }
@@ -153,12 +218,28 @@ namespace DB {
         for (var p in data.p.filter(p => p.down == true))
             d.$append(<item audio="{p.audio}" time="{p.time}"><block><div><n>{p.name}</n><a>{p.author}</a></div><div><button .bPlay>PLAY</button><button .delete><icon.x/></button></div></block></item>);
     }
+    function move() {
+        var p = data.o.position;
+        var s = data.o.size;
+        var (sx,sy,sw,sh) = View.screenBox(0,#workarea,#rectw);
+
+        // If window size close to screen size, then maximize window
+        if (sw-100 < s[0] && sh-100 < s[1]) {
+            // view.move( p[0], p[1], 905, 735, true );
+            view.state = View.WINDOW_MAXIMIZED;
+        } else {
+            // view.move( p[0], p[1], s[0], s[1], true );
+        }
+    }
 }
 
 
 event change $(#setting) {
-    DB.data.o = this.value;
+    var data = DB.data.o;
+    var value = this.value;
+    DB.data.o = {...data, ...value};
     DB.apply();
+    DB.save();
 }
 event click $(#changeDir) {
     var fn = view.selectFolder("Select Download folder" , System.home());
@@ -169,3 +250,5 @@ event click $(#changeDir) {
     }
 }
 
+DB.checkSubs();
+self.timer(600s, DB.checkSubs);

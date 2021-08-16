@@ -135,9 +135,9 @@ btn:hover {
     event click $(#exit) { view.parameters.close(); }
     view << event activate (as) { if( as === false ) { view.parameters.inactive(); } }
 
-    var mainWindow = view.all[0].root.$(frame#content)[0] || view.all[0].root;
+    var mainWindow = view.all[0].root.$(frame#content) ? view.all[0].root.$(frame#content)[0] : view.all[0].root;
     var tracker = mainWindow.$(#tracker);
-    //debug: playlist;
+    
     function self.ready() {
         var item = mainWindow.$(queue item:current);
         $(n).text = item.$(n).text;

@@ -1,13 +1,5 @@
-var records = [];
 
-function includeAttributes(recordNo, record, episode) { episode.@#audio = record.audio; episode.$(description).html = record.info || " "; }
-
-var Episodes = VirtualList {
-    container: $(episodes),
-    bufferSize: 50,
-    setupItemView: includeAttributes
-};
-Episodes.value = [];
+var Items = []; // used by virtual-list.tis
 
 function Get(params) {
     var defaultParams = { type:#get, output:#stream };
@@ -20,21 +12,16 @@ function Get(params) {
     return view.request(query);
 }
 
-
 async function getPodcast(link) {
     try {
         var r = await Get({url: link});
         Feed.html = r[0].toString().replace("<![CDATA[", "").replace("]]>", "");
         // Items = Feed.$$(channel>item);
-        // Items = [];
+        Items = [];
         for (var it in Feed.$$(channel>item)) {
-            if (it.$(enclosure)) 
-            records.push({audio: it.$(enclosure).@#url, 
-            name: it.$(title)?.text, date: it.$(pubDate)?.text.splice(16), 
-            info: it.$(description)?.text});
+            if (it.$(enclosure)) Items.push(it);
         }
-        Episodes.value = records;
-        // $(episodes).vlist.navigate("start");
+        $(episodes).vlist.navigate("start");
 
         // update author 
         var author = $(author);

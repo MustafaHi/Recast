@@ -42,7 +42,7 @@ event click $(#cPlaylist>.delete) {
     var el = this.$o(#lists>li);
     if (el.state.current) { $(#lists>li).state.current = true; }
     var ID = el.id;
-    if (ID == "queue") return true;
+    if (ID == "queue" || ID == "subscriptions") return true;
     var (i, l) = DB.data.l.find(l => l.id == ID);
     DB.data.l.remove(i);
     for (var p in DB.data.p.filter(p => p.list == ID)) // Delete podcasts in playlist

@@ -1,32 +1,37 @@
+
 # Recast
  Desktop podcast application
 
-> Version : 0.9  
-> [Binary Release](https://github.com/MustafaHi/Recast/releases)  
+> Version : 1.0  
+> [Release / Download](https://github.com/MustafaHi/Recast/releases)  
 > [Change Log & Features](https://github.com/MustafaHi/Recast/wiki/Change-log-&-Features)  
+> [Support / Help](https://github.com/MustafaHi/Recast/wiki/Support)  
 > [Dev Guide](https://github.com/MustafaHi/Recast/wiki/Dev-Guide)  
 > More information in the [wiki](https://github.com/MustafaHi/Recast/wiki)  
 
-Recast is a rich, light and beautiful podcast client for desktop (Windows/Mac/Linux)
+Recast is a rich, light and cross-platform podcast client for desktop (Windows/Mac/Linux)  
+[Download Now](https://github.com/MustafaHi/Recast/releases/latest)
 
-![Main Page](https://i.imgur.com/99BT5Pq.png)
+![Discover - vertical](https://i.imgur.com/UWYm2Tc.png)
+![Discover - Main Page](https://i.imgur.com/99BT5Pq.png)
 ![Podcast](https://i.imgur.com/TWdywSH.png)
 ![Playlists](https://i.imgur.com/JbfGG43.png)
 
 ## Features
-unchecked mean it's still in development
 
-- [x] Display & Play
-- [x] Search
-- [x] Playlist
-- [x] Download
-- [x] Subscription
-- [ ] New episode notification
-- [x] Tray player
-- [x] Setting
-- [x] Proxy
-- [x] Performance Mode (reduce visuals)
-- [ ] Share
-- [x] Themes
+- Discover (using custom query)
+- Search (iTunes playlist)
+- Playlists
+- Download
+- Subscription (+custom RSS feed)
+- Tray player
+- Light Mode
+- Proxy
+- Themes
+- light < 10MB
 
+## Credit
 
+Recast @MIT licensed, by [@MustafaHi](https://github.com/MustafaHi)  
+[Sciter](https://sciter.com) (framework)
+[iTunes](https://itunes.com) (playlist)
