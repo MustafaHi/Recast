@@ -1,5 +1,5 @@
 html {
-    font-family: Segoe UI;
+    font-family: Segoe UI, Cantarell;
 
     var(BG): #e6eef5;
     var(K) : #000;
@@ -25,6 +25,7 @@ html {
     var(playerBG): #fff;
     var(playerHBG): #e6eef5;
     var(playerK) : #000;
+    line-height: 16dip;
     /* color: #fff; */
     /* font-size: 9pt; */
 }
@@ -107,7 +108,8 @@ body button:not([type]):not([role]):hover, body button:current {
 }
 .bPlaylist { behavior: none; }
 input[placeholder]:empty { content: attr(placeholder); color: #888 !important; }
-popup[role=overflow-tooltip] {
+popup[role=overflow-tooltip],
+popup[role=overflow-multiline-tooltip] {
     background-color: #f8f8ff;
     padding: 0.4em;
 }
@@ -138,7 +140,7 @@ popup.menu button {
 }
 popup.menu button:hover { background: #e6eef5; }
 menu, #mPlaylists { padding: 0; background: color(BG); }
-menu li, #mPlaylists > li { padding: 0.5em; }
+menu li, #mPlaylists > li { padding: 0.5em; overflow: hidden; }
 menu li:hover, #mPlaylists > li:hover {
     background-color: #000;
     color: #fff;
@@ -192,6 +194,7 @@ navigator li:hover, navigator li:current {
     width: *;
     padding: 1em;
     background: none;
+    font-size: 9pt;
     color: color(K);
 }
 
@@ -300,13 +303,13 @@ form {
 
 }
 form button|checkbox { padding-left: 1.7em; }
-form label { vertical-align: middle; height: *;}
+form label { vertical-align: middle; height: *; width: 170dip;}
 form input:not([type="integer"]), form input caption {
     padding: 0.5em;
     border-radius: 0;
     display: block;
 }
-form input { width: *; }
+form input { width: *; font-family: inherit; }
 form select {
     border-radius: 0;
     height: *;

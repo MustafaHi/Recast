@@ -7,7 +7,13 @@ function initFiles(forced = false) {
         // // l = playlists     { id,name }
         // // s = subscriptions { name,author,feed,update,image100,image600 } // imageXX represent size, update is last check Date().toISOString()
         // // p = podcasts      { name,author,audio,list,down,time }
-        var data = {
+        file.print(JSON.stringify(DB.data," "));
+        file.close();
+    }
+}
+
+namespace DB {
+    var data = {
             o: {
                 performance: false,
                 animation: true,
@@ -30,20 +36,11 @@ function initFiles(forced = false) {
             }],
             s: [],
             p: []
-        }
-        file.print(JSON.stringify(data," "));
-        file.close();
-    }
-}
-initFiles();
-
-namespace DB {
-    var data;
+        };
     function load() {
         var file = Stream.openFile(dbPath, "ur");
-        data = parseData(file);
+        MergeObjects(data, parseData(file));
         file.close();
-        if(!data) { initFiles(true); load(); }
         
         move();
         apply();
@@ -95,7 +92,7 @@ namespace DB {
         var selected = $(#lists>li:current)?.id;
         $(#mPlaylists).clear();
         $(#lists).clear();
-        for (var l in data.l) {
+        for (var l in data.l.filter(l => l.id !== "subscriptions")) {
             var el = <li id={l.id}>{l.name}</li>;
             $(#mPlaylists).append(el);
             $(#lists).append(el);
@@ -154,7 +151,7 @@ namespace DB {
                     } else break;
                 }
             } catch (e){
-                debug: e.toString();
+                debug checkSubs: e.toString();
             }
         }
         if (newEpisodes.length > 0)
@@ -174,7 +171,7 @@ namespace DB {
         save();
     }
     
-    function podcasts(list = {}, type, current = false) {
+    function podcasts(list, type, current = false) {
         if (type == "playlist") {
             $(#playlists>list).clear();
             for (var p in list)
@@ -235,16 +232,14 @@ namespace DB {
 
 
 event change $(#setting) {
-    var data = DB.data.o;
-    var value = this.value;
-    DB.data.o = {...data, ...value};
+    MergeObjects(DB.data.o, this.value);
     DB.apply();
     DB.save();
 }
 event click $(#changeDir) {
     var fn = view.selectFolder("Select Download folder" , System.home());
     if (fn) {
-        DB.data.o.downloadDir = fn;
+        DB.data.o.downloadDir = URL.toPath(fn);
         DB.save();
         $(#setting).value = DB.data.o;
     }
@@ -252,3 +247,16 @@ event click $(#changeDir) {
 
 DB.checkSubs();
 self.timer(600s, DB.checkSubs);
+
+
+function MergeObjects(obj1, obj2) {
+  for (var p in obj2) {
+    try {
+      if (typeof obj2[p] == #object)
+        obj1[p] = MergeObjects(obj1[p], obj2[p]);
+      else
+        obj1[p] = obj2[p];
+    } catch(e) { obj1[p] = obj2[p]; }
+  }
+  return obj1;
+}

@@ -10,19 +10,22 @@ event click $(.bDownload) {
         time  : 0
     };
     DB.addPodcast(podcast, false);
-    DB.downloads();
+    $(#downloads>list).$append(<item audio="{podcast.audio}" time="{podcast.time}"><block><div><n>{podcast.name}</n><a>{podcast.author}</a></div><div><button .bPlay>PLAY</button><button .delete><icon.x/></button></div></block></item>);
     download(podcast);
+    this.remove();
 }
 
-function download(podcast) {
+async function download(podcast) {
     var el = $(#downloads item[audio='{podcast.audio}'] .bPlay);
     el.@#download = true;
-    var path = URL.fromPath(DB.data.o.downloadDir + "/" + podcast.name + "." + URL.parse(podcast.audio).ext);
+    var path = URL.toPath(DB.data.o.downloadDir + "/" + podcast.name + "." + URL.parse(podcast.audio).ext);
     function progress(loaded, total) {
-        el.text = String.printf("%02d%%",((loaded || 0)/(total || 0).toFloat())*100);
+        el = $(#downloads item[audio='{podcast.audio}'] .bPlay);
+        el.text = String.printf("%02d%%",((loaded || 1)/(total || 1).toFloat())*100);
     }
     function success(md5) {
         if (md5) {
+            el = $(#downloads item[audio='{podcast.audio}'] .bPlay);
             el.@#download = undefined;
             el.text = "PLAY";
             el.$o(item).@#audio = path;
@@ -38,22 +41,36 @@ function download(podcast) {
         DB.save();
     }
     try {
-
-        var query = {
-            type  : #get,
-            url   : podcast.audio,
-            toFile: path,
-            success : success,
-            progress: progress,
-            error   : error
-        };
-        if (DB.data.o.path) {
-            var p = DB.data.o.path.split(":");
-            query.proxyHost = p[0];
-            query.proxyPort = p[1].toInteger();
+        if (Linux.is)
+        {
+            var p = System.Process.exec("curl", ["-w","\"%{http_code}\"","-L", "-o", path, podcast.audio]);
+                p.on("stdout", (data) => {
+                    if (data == "\"200\"") {
+                        p.terminate();
+                        success(1);
+                    }
+                });
+                p.on("stderr", (data) => {
+                    el.text = data[..4] + "%";
+                });
         }
-        view.request(query);
-
+        else
+        {
+            var query = {
+                type  : #get,
+                url   : podcast.audio,
+                toFile: path,
+                success : success,
+                progress: progress,
+                error   : error
+            };
+            if (DB.data.o.path) {
+                var p = DB.data.o.path.split(":");
+                query.proxyHost = p[0];
+                query.proxyPort = p[1].toInteger();
+            }
+            await view.request(query);
+        }
     } catch(err) { debug: err.toString(); }
 }
 

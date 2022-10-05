@@ -33,7 +33,7 @@ view << event trayicon-click(evt) {
                     parameters: { show: show, hide: hide, inactive: inactive, close: close }
                 };
                 var x, y;
-                var (w,h) = trayPlayer.box(#dimension);
+                var (w,h) = trayPlayer.box(#dimension, #border);
                 var (tx,ty) = view.trayIcon(#place);
                 var (sX1,sY1,sX2,sY2) = view.screenBox(#workarea, #rect);
                 if (trayCentered) {

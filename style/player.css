@@ -16,7 +16,7 @@ player btn {
     font-weight: bolder;
     padding: 1em;
     /* background: red; */
-    line-height: 1;
+    line-height: 1em;
     cursor: pointer;
     border-radius: 1em;
     flow: horizontal;
@@ -56,7 +56,7 @@ player btn:hover {
     content: parent-attr(time);
     font-weight: bold;
     width: 4em;
-    font-family: Consolas;
+    font-family: Consolas, monospace;
     display: block;
     background: #fff;
     box-shadow: 0px 1px 1px #d1e6f8;

@@ -81,7 +81,7 @@ event click $(.bPlay) {
     play();
 }
 
-event click $(.bPlaylist) { this.popup($(#mPlaylists), 5); }
+event click $(.bPlaylist) { this.$p(button).popup($(#mPlaylists), 5); }
 event click $(.bLink) { view.clipboard(#put, {text: this.$p(episode).@#audio}); }
 
 event click $(episode>description) { this.state.expanded = true; }

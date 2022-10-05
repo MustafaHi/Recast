@@ -1,5 +1,6 @@
 
 event click $(#tapePlay) {
+    if (!$(queue>item:current)) return;
     if (!this.@#started)
     {
         this.@#started = true;
@@ -17,22 +18,27 @@ event click $(#tapePlay) {
     }
 }
 event click $(#bPrev) {
+    if (!$(queue>item:current)) return;
     if (Tape.videoPosition() > 10) Tape.videoPlay(0);
     else if (var item = Queue.$$(item)[Queue.$(item:current).index+1]) item.sendEvent("click");
 }
 event click $(#bNext) {
+    if (!$(queue>item:current)) return;
     if (var item = Queue.$$(item)[Queue.$(item:current).index-1]) item.sendEvent("click");
 }
 
-
 event change $(#tracker) {
+    if (!$(queue>item:current)) return;
     var (tm, ts) = hms(this.value);
     this.@#time = String.printf("%02d:%02d", tm, ts);
-    Tape.videoStop();
-    Tape.videoPosition(this.value);
 }
-event click $(#tracker) { $(#tapePlay).@#started ? Tape.videoPlay() : $(#tapePlay).sendEvent("click"); }
-
+event click $(#tracker) {
+    if ($(#tapePlay).@#started) {
+        Tape.videoPlay(this.value);
+    } else {
+        $(#tapePlay).sendEvent("click");
+    }
+}
 
 
 event click $(queue>item) {
@@ -101,8 +107,10 @@ function hms(seconds) {
   m = seconds % 60; return ( m, s );
 }
 
-function pulse() { // Update Tracker and Time | repeat every 0.5s while podcast is playing
-      // if (!Tape.videoIsPlaying()) return false; // videoIsPlaying() not working [unknown reason]
+//| Update Tracker and Time | repeat every 0.5s while podcast is playing
+function pulse() {
+    //| videoIsPlaying() not working [because no frame is rendered]
+    // if (!Tape.videoIsPlaying()) return false; 
     if (!$(#tapePlay).@#started) return false;
     var m = (Tape.videoDuration() + 0.5).toInteger();
     var t = (Tape.videoPosition() + 0.5).toInteger();
@@ -116,3 +124,54 @@ function pulse() { // Update Tracker and Time | repeat every 0.5s while podcast 
     if (t == m) { if (var item = Queue.$$(item)[Queue.$(item:current).index-1]) item.sendEvent("click"); }
     return true;
 }
+
+const Linux = {
+    is: System.PLATFORM == "Linux",
+    player: undefined,
+    time: 0,
+    duration: 0,
+    audio: "",
+}
+
+Linux.listen = () => {
+    function toSeconds(time) {
+        var m = time.split(":").map(t=>t.toInteger());
+        return (m[0]*3600 + m[1]*60 + m[2]);
+    }
+    Linux.player.on("stderr", (d) => {
+                    if (d[..2] == "A:") {
+                        var time = d.match(/\d+\:\d+\:\d+/g);
+                        Linux.time = toSeconds(time[0]);
+                        Linux.duration = toSeconds(time[1]);
+                    }
+                })
+}
+
+function setupLinux() {
+    if (Linux.is) {
+        Tape.videoPlay = (time = false) => {
+            time = typeof time == #integer ? time.toString() : Linux.time.toString();
+            Tape.videoStop();
+            Linux.player = System.Process.exec("mpv", ["--vid=no", "--start", time, Linux.audio]);
+            Linux.listen();
+        }
+        Tape.videoPosition = (time = false) => {
+            if (typeof time == #integer)
+                Linux.time = time;
+            return Linux.time;
+        }
+        Tape.videoDuration = () => {
+            return Linux.duration;
+        }
+        Tape.videoLoad = (url) => { Linux.audio = url; }
+        Tape.videoUnload = () => {
+            if (Linux.player !== undefined && Linux.player.active == true) {
+                Linux.player.terminate();
+                Linux.player = undefined;
+            }
+        }
+        Tape.videoStop = Tape.videoUnload;
+    }
+}
+
+setupLinux();

@@ -11,11 +11,38 @@ function Get(params) {
     }
     return view.request(query);
 }
+function GetCurl(param) {
+    var request = promise();
+    var result  = "";
+    var p = System.Process.exec("curl", param);
+        p.on("stdout", (data) => {
+            if (data == "Not Found" || data == "\"000\"") 
+                request(false, [data]);
+            else {
+                if (data.slice(-4) == "200\"") {
+                    result += data.splice(-4);
+                    p.terminate();
+                    request(true, [result]);
+                } else 
+                    result += data;
+            }
+        });
+    return request;
+}
 
 async function getPodcast(link) {
     try {
-        var r = await Get({url: link});
-        Feed.html = r[0].toString().replace("<![CDATA[", "").replace("]]>", "");
+        if (Linux.is)
+        {
+            var r = await GetCurl(["-L", "--silent", "-w","\"%{http_code}\"", link]);
+            Feed.html = r.replace("<![CDATA[", "").replace("]]>", "");
+        }
+        else
+        {
+            var r = await Get({url: link});
+            Feed.html = r[0].toString().replace("<![CDATA[", "").replace("]]>", "");
+            r[0].close();
+        }
         // Items = Feed.$$(channel>item);
         Items = [];
         for (var it in Feed.$$(channel>item)) {
@@ -33,7 +60,6 @@ async function getPodcast(link) {
 
         $(.bSubscribe).state.current = DB.data.s.some(p => p.feed == link);
         Playlist.state.busy = false;
-        r[0].close();
     } catch (e) {
         Playlist.@#failed = true;
         debug error: e.toString();

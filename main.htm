@@ -1,4 +1,4 @@
-<html lang="ar" window-frame="extended" window-resizable>
+<html lang="ar" window-frame="extended" window-resizable window-width="910" window-height="700">
 <head>
     <title>Recast</title>
     <link rel="stylesheet" href="style/icons.css">
@@ -66,7 +66,7 @@
         </section>
         <section #options>Options
             <form #setting>
-                <button|checkbox (performance)>Light Mode</button>
+                <button|checkbox (performance)>Lite Mode</button>
                 <button|checkbox (animation)>Animation</button>
                 <button|checkbox (trayPlayer)>Tray Player</button>
                 <button|checkbox (verticalFlow)>Vertical Flow</button>
@@ -86,7 +86,7 @@
                     </select>
             </form>
             <footer>
-                Recast 1.0 <a href="https://github.com/MustafaHi/Recast">https://github.com/MustafaHi/Recast</a>
+                Recast 1.1 <a href="https://github.com/MustafaHi/Recast">https://github.com/MustafaHi/Recast</a>
             </footer>
         </section>
         <playlist>
@@ -132,6 +132,6 @@
     <btn #bNext><icon.right/></btn>
     <input #tracker type="hslider" time="00:00"/>
     <p #time></p>
-    <queue></queue>
+    <queue list=""></queue>
 </player>
 </html>
